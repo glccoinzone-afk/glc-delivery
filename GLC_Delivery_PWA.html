@@ -1,0 +1,1699 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>GLC Delivery</title>
+
+<!-- PWA META TAGS -->
+<meta name="application-name" content="GLC Delivery">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="GLC Delivery">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="theme-color" content="#F5A623">
+<meta name="description" content="GLC Delivery Management System - Patna">
+
+<!-- PWA MANIFEST (inline) -->
+<link rel="manifest" href="data:application/json,{
+  %22name%22:%22GLC+Delivery+Pro%22,
+  %22short_name%22:%22GLC+Delivery%22,
+  %22description%22:%22Delivery+Management+System%22,
+  %22start_url%22:%22.%22,
+  %22display%22:%22standalone%22,
+  %22background_color%22:%22%230A0C10%22,
+  %22theme_color%22:%22%23F5A623%22,
+  %22orientation%22:%22portrait%22,
+  %22icons%22:[{%22src%22:%22data:image/svg+xml,%3Csvg+xmlns='http://www.w3.org/2000/svg'+viewBox='0+0+512+512'%3E%3Crect+width='512'+height='512'+rx='80'+fill='%23F5A623'/%3E%3Ctext+x='256'+y='320'+font-size='280'+text-anchor='middle'+fill='white'%3E🚀%3C/text%3E%3C/svg%3E%22,%22sizes%22:%22512x512%22,%22type%22:%22image/svg+xml%22,%22purpose%22:%22any+maskable%22}]
+}">
+
+<!-- iOS Icons -->
+<link rel="apple-touch-icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'><rect width='512' height='512' rx='80' fill='%23F5A623'/><text x='256' y='320' font-size='280' text-anchor='middle' fill='white'>🚚</text></svg>">
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@2.47.0/tabler-icons.min.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<!-- FIREBASE SDK -->
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-database-compat.js"></script>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#0A0C10;--bg2:#111318;--bg3:#181B22;--bg4:#1E2129;
+  --surface:#1A1D26;--surface2:#222630;--surface3:#2A2F3C;
+  --accent:#F5A623;--accent2:#FF6B35;--accentg:linear-gradient(135deg,#F5A623,#FF6B35);
+  --green:#22C55E;--green-bg:rgba(34,197,94,0.12);
+  --blue:#3B82F6;--blue-bg:rgba(59,130,246,0.12);
+  --red:#EF4444;--red-bg:rgba(239,68,68,0.12);
+  --purple:#A855F7;--purple-bg:rgba(168,85,247,0.12);
+  --yellow:#F5A623;--yellow-bg:rgba(245,166,35,0.12);
+  --text:#F0F2F8;--text2:#9BA3B8;--text3:#5A6278;
+  --border:1px solid rgba(255,255,255,0.07);
+  --border2:1px solid rgba(255,255,255,0.12);
+  --radius:12px;--radius-sm:8px;--sidebar:240px;
+  --shadow:0 4px 24px rgba(0,0,0,0.4);
+}
+html,body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;min-height:100vh;font-size:14px}
+.screen{display:none;min-height:100vh}
+.screen.active{display:block}
+
+/* LOGIN */
+.login-page{min-height:100vh;display:flex;align-items:center;justify-content:center;background:var(--bg);position:relative;overflow:hidden}
+.login-bg{position:absolute;inset:0;background:radial-gradient(ellipse 60% 50% at 50% 0%,rgba(245,166,35,0.08),transparent)}
+.login-dots{position:absolute;inset:0;background-image:radial-gradient(circle,rgba(255,255,255,0.03) 1px,transparent 1px);background-size:32px 32px}
+.login-card{background:var(--surface);border:var(--border2);border-radius:20px;padding:2.5rem;width:420px;position:relative;z-index:1;box-shadow:0 24px 80px rgba(0,0,0,0.6)}
+.glc-logo{display:flex;align-items:center;gap:12px;margin-bottom:2rem}
+.logo-icon{width:48px;height:48px;background:var(--accentg);border-radius:14px;display:flex;align-items:center;justify-content:center;font-size:22px;color:#fff;box-shadow:0 8px 24px rgba(245,166,35,0.35)}
+.logo-text{font-family:'Syne',sans-serif;font-size:22px;font-weight:800;color:var(--text)}
+.logo-sub{font-size:11px;color:var(--text2);letter-spacing:2px;text-transform:uppercase;margin-top:1px}
+.login-title{font-family:'Syne',sans-serif;font-size:20px;font-weight:700;margin-bottom:4px}
+.login-desc{font-size:13px;color:var(--text2);margin-bottom:1.75rem}
+.role-tabs{display:flex;gap:6px;background:var(--bg3);border-radius:var(--radius-sm);padding:4px;margin-bottom:1.5rem}
+.rtab{flex:1;padding:8px;text-align:center;border-radius:6px;cursor:pointer;font-size:12px;color:var(--text2);font-weight:500;transition:all 0.2s;display:flex;align-items:center;justify-content:center;gap:5px}
+.rtab.active{background:var(--accentg);color:#fff;box-shadow:0 4px 12px rgba(245,166,35,0.3)}
+.inp-wrap{margin-bottom:1rem}
+.inp-label{font-size:11px;color:var(--text2);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:6px;display:block;font-weight:500}
+.inp{width:100%;padding:10px 14px;background:var(--bg3);border:var(--border2);border-radius:var(--radius-sm);font-size:13px;color:var(--text);font-family:'DM Sans',sans-serif;outline:none;transition:border 0.2s}
+.inp:focus{border-color:var(--accent)}
+.btn-login{width:100%;padding:12px;background:var(--accentg);border:none;border-radius:var(--radius-sm);font-size:14px;font-weight:600;color:#fff;cursor:pointer;font-family:'Syne',sans-serif;letter-spacing:0.5px;box-shadow:0 8px 24px rgba(245,166,35,0.3);transition:opacity 0.2s,transform 0.15s}
+.btn-login:hover{opacity:0.92;transform:translateY(-1px)}
+.login-hint{font-size:11px;color:var(--text3);text-align:center;margin-top:1rem}
+
+/* APP LAYOUT */
+.app{display:flex;min-height:100vh}
+.sidebar{width:var(--sidebar);background:var(--bg2);border-right:var(--border);display:flex;flex-direction:column;position:fixed;top:0;bottom:0;left:0;z-index:20;overflow-y:auto}
+.sb-top{padding:1.5rem 1.25rem 1rem;border-bottom:var(--border)}
+.sb-logo{display:flex;align-items:center;gap:10px}
+.sb-icon{width:34px;height:34px;background:var(--accentg);border-radius:9px;display:flex;align-items:center;justify-content:center;font-size:16px;color:#fff}
+.sb-name{font-family:'Syne',sans-serif;font-size:15px;font-weight:800;color:var(--text)}
+.sb-role{font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:1px}
+.nav-sec{padding:1.25rem 1.25rem 0.4rem;font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:1px;font-weight:600}
+.nav-item{display:flex;align-items:center;gap:10px;padding:9px 1.25rem;cursor:pointer;font-size:13px;color:var(--text2);border-left:2px solid transparent;transition:all 0.15s;margin:1px 0;border-radius:0 8px 8px 0;margin-right:8px}
+.nav-item:hover{color:var(--text);background:var(--surface)}
+.nav-item.active{color:var(--accent);border-left-color:var(--accent);background:rgba(245,166,35,0.08)}
+.nav-item i{font-size:17px}
+.sb-bot{margin-top:auto;padding:1rem 1.25rem;border-top:var(--border)}
+.sb-user{display:flex;align-items:center;gap:10px}
+.sb-avatar{width:34px;height:34px;border-radius:50%;background:var(--accentg);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:13px;color:#fff}
+.sb-uname{font-size:13px;font-weight:500;color:var(--text)}
+.sb-urole{font-size:11px;color:var(--text3)}
+.logout-btn{margin-left:auto;background:none;border:none;color:var(--text3);cursor:pointer;font-size:16px;padding:4px;border-radius:6px;transition:color 0.2s}
+.logout-btn:hover{color:var(--red)}
+.main{margin-left:var(--sidebar);flex:1;min-height:100vh;background:var(--bg)}
+.topbar{display:flex;align-items:center;justify-content:space-between;padding:1.25rem 1.75rem;border-bottom:var(--border);background:var(--bg2);position:sticky;top:0;z-index:10}
+.topbar-title{font-family:'Syne',sans-serif;font-size:18px;font-weight:700;color:var(--text)}
+.topbar-sub{font-size:12px;color:var(--text3);margin-top:1px}
+.topbar-right{display:flex;align-items:center;gap:10px}
+.content{padding:1.75rem}
+.page{display:none}
+.page.active{display:block}
+
+/* CARDS */
+.card{background:var(--surface);border:var(--border);border-radius:var(--radius);padding:1.25rem}
+.metric-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:12px;margin-bottom:1.5rem}
+.metric-card{background:var(--surface);border:var(--border);border-radius:var(--radius);padding:1.1rem;position:relative;overflow:hidden}
+.metric-card::before{content:'';position:absolute;top:0;left:0;right:0;height:2px}
+.mc-green::before{background:var(--green)}.mc-blue::before{background:var(--blue)}
+.mc-orange::before{background:var(--accent)}.mc-red::before{background:var(--red)}
+.mc-purple::before{background:var(--purple)}
+.mc-label{font-size:11px;color:var(--text3);text-transform:uppercase;letter-spacing:0.5px;font-weight:500;margin-bottom:6px}
+.mc-val{font-family:'Syne',sans-serif;font-size:26px;font-weight:700;color:var(--text)}
+.mc-sub{font-size:11px;color:var(--text3);margin-top:3px}
+.mc-icon{position:absolute;right:12px;top:50%;transform:translateY(-50%);font-size:28px;opacity:0.08}
+
+/* TABLE */
+.tbl-wrap{overflow-x:auto}
+table{width:100%;border-collapse:collapse;font-size:13px}
+thead th{padding:10px 14px;color:var(--text3);font-weight:500;font-size:11px;text-transform:uppercase;letter-spacing:0.5px;border-bottom:var(--border);text-align:left;white-space:nowrap;background:var(--bg3)}
+tbody td{padding:11px 14px;border-bottom:var(--border);color:var(--text);vertical-align:middle}
+tbody tr:hover td{background:rgba(255,255,255,0.02)}
+tbody tr:last-child td{border-bottom:none}
+
+/* BADGES */
+.badge{display:inline-flex;align-items:center;gap:4px;padding:3px 9px;border-radius:20px;font-size:11px;font-weight:600;letter-spacing:0.2px}
+.b-pending{background:var(--yellow-bg);color:var(--yellow);border:1px solid rgba(245,166,35,0.2)}
+.b-assigned{background:var(--blue-bg);color:var(--blue);border:1px solid rgba(59,130,246,0.2)}
+.b-delivered{background:var(--green-bg);color:var(--green);border:1px solid rgba(34,197,94,0.2)}
+.b-cancelled{background:var(--red-bg);color:var(--red);border:1px solid rgba(239,68,68,0.2)}
+.b-online{background:var(--green-bg);color:var(--green)}
+.b-offline{background:rgba(255,255,255,0.04);color:var(--text3)}
+.b-busy{background:var(--yellow-bg);color:var(--yellow)}
+
+/* BUTTONS */
+.btn{display:inline-flex;align-items:center;gap:6px;padding:7px 14px;border-radius:var(--radius-sm);font-size:13px;font-weight:500;cursor:pointer;border:var(--border2);background:var(--surface2);color:var(--text);font-family:'DM Sans',sans-serif;transition:all 0.15s}
+.btn:hover{background:var(--surface3)}
+.btn-accent{background:var(--accentg);color:#fff;border:none;box-shadow:0 4px 14px rgba(245,166,35,0.25)}
+.btn-accent:hover{opacity:0.9}
+.btn-sm{padding:5px 10px;font-size:12px}
+.btn-green{background:var(--green-bg);color:var(--green);border:1px solid rgba(34,197,94,0.2)}
+.btn-green:hover{background:rgba(34,197,94,0.2)}
+.btn-red{background:var(--red-bg);color:var(--red);border:1px solid rgba(239,68,68,0.2)}
+.btn-red:hover{background:rgba(239,68,68,0.2)}
+.btn-purple{background:var(--purple-bg);color:var(--purple);border:1px solid rgba(168,85,247,0.2)}
+.btn-purple:hover{background:rgba(168,85,247,0.2)}
+.btn-blue{background:var(--blue-bg);color:var(--blue);border:1px solid rgba(59,130,246,0.2)}
+.btn-blue:hover{background:rgba(59,130,246,0.2)}
+
+/* FORM */
+.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.fg{margin-bottom:0.9rem}
+.fg label{font-size:11px;color:var(--text2);text-transform:uppercase;letter-spacing:0.5px;font-weight:500;display:block;margin-bottom:5px}
+.fg input,.fg select{width:100%;padding:9px 12px;background:var(--bg3);border:var(--border2);border-radius:var(--radius-sm);font-size:13px;color:var(--text);font-family:'DM Sans',sans-serif;outline:none;transition:border 0.2s}
+.fg input:focus,.fg select:focus{border-color:var(--accent)}
+.fg select option{background:var(--bg3)}
+
+/* MODAL */
+.modal-bg{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.7);z-index:100;align-items:center;justify-content:center;backdrop-filter:blur(4px)}
+.modal-bg.open{display:flex}
+.modal{background:var(--surface);border:var(--border2);border-radius:16px;padding:1.75rem;width:500px;max-width:92vw;max-height:85vh;overflow-y:auto;box-shadow:0 32px 80px rgba(0,0,0,0.7)}
+.modal-hd{display:flex;justify-content:space-between;align-items:center;margin-bottom:1.5rem}
+.modal-title{font-family:'Syne',sans-serif;font-size:17px;font-weight:700}
+.modal-x{background:var(--bg3);border:none;color:var(--text2);cursor:pointer;width:30px;height:30px;border-radius:8px;font-size:16px;display:flex;align-items:center;justify-content:center}
+.modal-x:hover{color:var(--text)}
+
+/* ORDER CARD */
+.ord-card{background:var(--surface);border:var(--border);border-radius:var(--radius);padding:1.25rem;margin-bottom:0.75rem;transition:border 0.2s}
+.ord-card:hover{border-color:rgba(245,166,35,0.25)}
+.ord-card-hd{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:0.75rem}
+.ord-id{font-family:'Syne',sans-serif;font-size:13px;font-weight:700;color:var(--accent)}
+.ord-cust{font-size:14px;font-weight:500;color:var(--text);margin-top:2px}
+.ord-addr{font-size:12px;color:var(--text2);margin-top:3px;display:flex;align-items:center;gap:4px}
+.ord-amt{font-family:'Syne',sans-serif;font-size:20px;font-weight:800;background:var(--accentg);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.ord-actions{display:flex;gap:8px;margin-top:0.85rem;flex-wrap:wrap}
+
+/* EARNINGS */
+.earn-row{display:flex;justify-content:space-between;align-items:center;padding:12px 0;border-bottom:var(--border)}
+.earn-row:last-child{border-bottom:none}
+.earn-credit{font-family:'Syne',sans-serif;font-size:15px;font-weight:700;color:var(--green)}
+.sec-hdr{display:flex;justify-content:space-between;align-items:center;margin-bottom:1.1rem}
+.sec-title{font-family:'Syne',sans-serif;font-size:15px;font-weight:700}
+.assign-block{border:var(--border);border-radius:var(--radius);padding:1rem;margin-bottom:0.75rem;background:var(--bg3);transition:border 0.2s}
+.assign-block:hover{border-color:rgba(245,166,35,0.2)}
+
+/* TOAST */
+.toast{position:fixed;bottom:24px;right:24px;background:var(--surface3);border:var(--border2);color:var(--text);padding:11px 18px;border-radius:10px;font-size:13px;z-index:999;opacity:0;transform:translateY(8px);transition:all 0.3s;pointer-events:none;display:flex;align-items:center;gap:8px;box-shadow:var(--shadow)}
+.toast.show{opacity:1;transform:translateY(0)}
+
+.stat-pill{display:inline-flex;align-items:center;gap:5px;padding:4px 10px;border-radius:20px;font-size:11px;background:var(--surface2);color:var(--text2)}
+.divider{border:none;border-top:var(--border);margin:1rem 0}
+.txt-accent{background:var(--accentg);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.profile-row{display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:var(--border);font-size:13px}
+.profile-row:last-child{border-bottom:none}
+.profile-key{color:var(--text2);display:flex;align-items:center;gap:7px}
+.profile-val{color:var(--text);font-weight:500}
+
+/* ══ GPS MAP ══ */
+#gps-map-container{background:var(--surface);border:var(--border);border-radius:var(--radius);overflow:hidden;margin-bottom:1rem}
+.map-header{display:flex;align-items:center;justify-content:space-between;padding:1rem 1.25rem;border-bottom:var(--border)}
+.map-body{position:relative;height:380px;background:#141820;overflow:hidden}
+.map-grid{position:absolute;inset:0;background-image:linear-gradient(rgba(255,255,255,0.03) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,0.03) 1px,transparent 1px);background-size:40px 40px}
+.map-road-h{position:absolute;background:rgba(255,255,255,0.06);height:3px;border-radius:2px}
+.map-road-v{position:absolute;background:rgba(255,255,255,0.06);width:3px;border-radius:2px}
+.map-pin{position:absolute;transform:translate(-50%,-100%);cursor:pointer;transition:transform 0.3s;z-index:5}
+.map-pin:hover{transform:translate(-50%,-100%) scale(1.15)}
+.pin-dot{width:36px;height:36px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:16px;box-shadow:0 4px 16px rgba(0,0,0,0.5);border:2px solid rgba(255,255,255,0.2)}
+.pin-tail{width:0;height:0;border-left:6px solid transparent;border-right:6px solid transparent;margin:0 auto}
+.pin-label{background:var(--surface3);border:var(--border2);border-radius:6px;padding:3px 8px;font-size:10px;font-weight:600;white-space:nowrap;margin-top:4px;text-align:center}
+.agent-ping{position:absolute;border-radius:50%;background:rgba(34,197,94,0.25);animation:ping 2s cubic-bezier(0,0,0.2,1) infinite}
+@keyframes ping{0%{transform:translate(-50%,-50%) scale(0.8);opacity:1}75%,100%{transform:translate(-50%,-50%) scale(2.2);opacity:0}}
+.map-legend{display:flex;gap:12px;padding:0.75rem 1.25rem;border-top:var(--border);flex-wrap:wrap}
+.leg-item{display:flex;align-items:center;gap:6px;font-size:11px;color:var(--text2)}
+.leg-dot{width:10px;height:10px;border-radius:50%}
+.live-badge{display:inline-flex;align-items:center;gap:5px;background:var(--green-bg);color:var(--green);border:1px solid rgba(34,197,94,0.25);padding:3px 10px;border-radius:20px;font-size:11px;font-weight:600}
+.live-dot{width:6px;height:6px;border-radius:50%;background:var(--green);animation:blink 1.2s infinite}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:0.3}}
+.route-line{position:absolute;background:linear-gradient(90deg,var(--blue),var(--accent));height:2px;transform-origin:left center;opacity:0.5;border-radius:2px;z-index:3}
+
+/* ══ ANALYTICS CHARTS ══ */
+.charts-grid{display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-bottom:1rem}
+.chart-card{background:var(--surface);border:var(--border);border-radius:var(--radius);padding:1.25rem}
+.chart-title{font-family:'Syne',sans-serif;font-size:14px;font-weight:700;margin-bottom:1rem;display:flex;align-items:center;gap:8px}
+canvas{display:block;width:100%!important}
+.bar-wrap{display:flex;flex-direction:column;gap:10px}
+.bar-item{display:flex;align-items:center;gap:10px;font-size:12px}
+.bar-label{width:70px;color:var(--text2);flex-shrink:0;font-size:11px}
+.bar-track{flex:1;background:var(--bg3);border-radius:4px;height:20px;overflow:hidden;position:relative}
+.bar-fill{height:100%;border-radius:4px;transition:width 0.8s cubic-bezier(0.4,0,0.2,1);display:flex;align-items:center;padding:0 6px;font-size:10px;font-weight:600;color:#fff;white-space:nowrap}
+.bar-val{width:40px;text-align:right;font-weight:600;font-family:'Syne',sans-serif;font-size:12px}
+.donut-wrap{display:flex;align-items:center;gap:1.5rem}
+.donut-svg{flex-shrink:0}
+.donut-legend{display:flex;flex-direction:column;gap:8px}
+.donut-leg-item{display:flex;align-items:center;gap:7px;font-size:12px}
+.donut-leg-dot{width:10px;height:10px;border-radius:3px;flex-shrink:0}
+.line-chart-wrap{height:130px;position:relative}
+.line-svg{width:100%;height:100%}
+.spark-grid line{stroke:rgba(255,255,255,0.05)}
+.heat-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:4px}
+.heat-cell{aspect-ratio:1;border-radius:3px;background:var(--bg3);transition:background 0.3s;cursor:pointer;position:relative}
+.heat-cell:hover::after{content:attr(data-tip);position:absolute;bottom:calc(100%+4px);left:50%;transform:translateX(-50%);background:var(--surface3);border:var(--border2);border-radius:6px;padding:4px 8px;font-size:10px;white-space:nowrap;z-index:10;color:var(--text)}
+.heat-days{display:grid;grid-template-columns:repeat(7,1fr);gap:4px;margin-bottom:4px}
+.heat-day{font-size:9px;color:var(--text3);text-align:center}
+
+/* ══ NOTIFICATION PANEL ══ */
+.notif-panel{background:var(--surface);border:var(--border);border-radius:var(--radius);padding:1.25rem;margin-bottom:1rem}
+.notif-row{display:flex;align-items:flex-start;gap:10px;padding:10px 0;border-bottom:var(--border);font-size:13px}
+.notif-row:last-child{border-bottom:none}
+.notif-icon{width:32px;height:32px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:15px;flex-shrink:0}
+.notif-body{flex:1}
+.notif-title{font-weight:500;color:var(--text);margin-bottom:2px}
+.notif-msg{font-size:12px;color:var(--text2)}
+.notif-time{font-size:11px;color:var(--text3);flex-shrink:0}
+.sms-preview{background:var(--bg3);border-radius:12px 12px 12px 0;padding:10px 14px;font-size:13px;color:var(--text);border:var(--border);margin:8px 0;line-height:1.5;max-width:90%}
+.channel-tabs{display:flex;gap:6px;margin-bottom:1rem}
+.ctab{padding:6px 14px;border-radius:20px;font-size:12px;font-weight:500;cursor:pointer;border:var(--border2);color:var(--text2);background:var(--surface2);transition:all 0.15s}
+.ctab.active{background:var(--accentg);color:#fff;border-color:transparent}
+
+/* ══ ROUTE OPTIMIZER ══ */
+.route-card{background:var(--surface);border:var(--border);border-radius:var(--radius);padding:1.25rem;margin-bottom:1rem}
+.route-step{display:flex;align-items:flex-start;gap:12px;padding:10px 0;border-bottom:var(--border)}
+.route-step:last-child{border-bottom:none}
+.step-num{width:28px;height:28px;border-radius:50%;background:var(--accentg);color:#fff;font-size:12px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-family:'Syne',sans-serif}
+.step-body{flex:1}
+.step-addr{font-size:13px;font-weight:500;color:var(--text)}
+.step-meta{font-size:11px;color:var(--text3);margin-top:3px}
+.step-dist{font-size:12px;font-weight:600;color:var(--accent);flex-shrink:0}
+.route-connector{width:2px;background:linear-gradient(var(--accent),var(--blue));height:20px;margin-left:13px;opacity:0.4}
+
+/* ══ SMS MODAL STYLES ══ */
+.sms-modal-preview{background:#0D1117;border-radius:12px;padding:1rem;margin:1rem 0;font-size:13px;line-height:1.6;color:#cdd9e5;border:1px solid rgba(255,255,255,0.08)}
+.sms-phone-mock{background:#1c2128;border-radius:16px;padding:1.25rem;max-width:280px;margin:0 auto}
+.sms-bubble{background:#0a7cff;color:#fff;border-radius:16px 16px 4px 16px;padding:10px 14px;font-size:13px;line-height:1.5;margin-bottom:6px}
+.sms-time-label{font-size:10px;color:#6e7681;text-align:center;margin-bottom:8px}
+
+/* ══ INVOICE PREVIEW ══ */
+.invoice-preview{background:#fff;color:#111;border-radius:var(--radius);padding:2rem;font-size:13px;line-height:1.6;max-height:400px;overflow-y:auto}
+.inv-header{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:1.5rem;padding-bottom:1rem;border-bottom:2px solid #f59e0b}
+.inv-title{font-size:22px;font-weight:800;color:#f59e0b;font-family:'Syne',sans-serif}
+.inv-table{width:100%;border-collapse:collapse;margin:1rem 0}
+.inv-table th{background:#fef3c7;padding:8px 12px;text-align:left;font-size:11px;text-transform:uppercase;letter-spacing:0.5px;color:#92400e}
+.inv-table td{padding:8px 12px;border-bottom:1px solid #f3f4f6;color:#374151}
+.inv-total-row{background:#fef3c7;font-weight:700}
+</style>
+
+<div id="root">
+
+<!-- LOGIN -->
+<div id="sc-login" class="screen active">
+<div class="login-page">
+  <div class="login-bg"></div><div class="login-dots"></div>
+  <div class="login-card">
+    <div class="glc-logo">
+      <div class="logo-icon"><i class="ti ti-truck-delivery"></i></div>
+      <div><div class="logo-text">GLC<span class="txt-accent">Delivery</span></div><div class="logo-sub">Fleet Management Pro v2</div></div>
+    </div>
+    <div class="login-title">Welcome back</div>
+    <div class="login-desc">Apne account mein login karein</div>
+    <div class="role-tabs">
+      <div class="rtab active" id="rtab-admin" onclick="setRole('admin')"><i class="ti ti-shield-check"></i> Admin</div>
+      <div class="rtab" id="rtab-delivery" onclick="setRole('delivery')"><i class="ti ti-motorbike"></i> Delivery Boy</div>
+    </div>
+    <div class="inp-wrap"><label class="inp-label">Username</label><input class="inp" id="l-user" value="admin"></div>
+    <div class="inp-wrap"><label class="inp-label">Password</label><input class="inp" id="l-pass" type="password" value="admin123"></div>
+    <button class="btn-login" onclick="doLogin()"><i class="ti ti-login" style="font-size:16px"></i> Login &rarr;</button>
+    <div class="login-hint" id="l-hint">Admin: admin / admin123 &nbsp;|&nbsp; Delivery: rahul / pass123</div>
+  </div>
+</div>
+</div>
+
+<!-- ADMIN -->
+<div id="sc-admin" class="screen">
+<div class="app">
+  <div class="sidebar">
+    <div class="sb-top"><div class="sb-logo"><div class="sb-icon"><i class="ti ti-truck-delivery"></i></div><div><div class="sb-name">GLCDelivery</div><div class="sb-role">Admin Panel</div></div></div></div>
+    <div class="nav-sec">Dashboard</div>
+    <div class="nav-item active" onclick="showPage('dashboard')" id="nav-dashboard"><i class="ti ti-layout-dashboard"></i> Overview</div>
+    <div class="nav-item" onclick="showPage('gpsmap')" id="nav-gpsmap"><i class="ti ti-map-2"></i> GPS Tracking</div>
+    <div class="nav-item" onclick="showPage('analytics')" id="nav-analytics"><i class="ti ti-chart-bar"></i> Analytics</div>
+    <div class="nav-sec">Management</div>
+    <div class="nav-item" onclick="showPage('orders')" id="nav-orders"><i class="ti ti-package"></i> Orders</div>
+    <div class="nav-item" onclick="showPage('agents')" id="nav-agents"><i class="ti ti-users"></i> Delivery Boys</div>
+    <div class="nav-item" onclick="showPage('assign')" id="nav-assign"><i class="ti ti-arrows-shuffle"></i> Assign Orders</div>
+    <div class="nav-item" onclick="showPage('route')" id="nav-route"><i class="ti ti-route"></i> Route Optimizer</div>
+    <div class="nav-sec">Finance</div>
+    <div class="nav-item" onclick="showPage('earnings')" id="nav-earnings"><i class="ti ti-coin"></i> Earnings</div>
+    <div class="nav-item" onclick="showPage('notifications')" id="nav-notifications"><i class="ti ti-bell"></i> Notifications</div>
+    <div class="sb-bot">
+      <div class="sb-user">
+        <div class="sb-avatar">A</div>
+        <div><div class="sb-uname">Admin</div><div class="sb-urole">Super Admin</div></div>
+        <button class="logout-btn" onclick="logout()"><i class="ti ti-logout"></i></button>
+      </div>
+    </div>
+  </div>
+  <div class="main">
+    <div class="topbar">
+      <div><div class="topbar-title" id="admin-pg-title">Dashboard Overview</div><div class="topbar-sub" id="admin-pg-sub">Aaj ki delivery activity</div></div>
+      <div class="topbar-right" id="admin-topbar-action"></div>
+    </div>
+    <div class="content">
+
+      <!-- DASHBOARD -->
+      <div class="page active" id="pg-dashboard">
+        <div class="metric-grid" id="adm-metrics"></div>
+        <div class="card">
+          <div class="sec-hdr"><div class="sec-title">Recent Orders</div></div>
+          <div class="tbl-wrap"><table id="tbl-recent"></table></div>
+        </div>
+      </div>
+
+      <!-- GPS MAP PAGE -->
+      <div class="page" id="pg-gpsmap">
+        <div id="gps-map-container">
+          <div class="map-header">
+            <div>
+              <div class="sec-title" style="margin:0"><i class="ti ti-map-2" style="color:var(--accent)"></i> Live GPS Tracking</div>
+              <div style="font-size:12px;color:var(--text3);margin-top:2px">Patna City — Real-time agent locations</div>
+            </div>
+            <div style="display:flex;align-items:center;gap:10px">
+              <span class="live-badge"><span class="live-dot"></span> LIVE</span>
+              <button class="btn btn-sm" onclick="refreshGPS()"><i class="ti ti-refresh"></i> Refresh</button>
+            </div>
+          </div>
+          <div class="map-body" id="map-body">
+            <div class="map-grid"></div>
+            <!-- Roads will be injected -->
+          </div>
+          <div class="map-legend">
+            <div class="leg-item"><div class="leg-dot" style="background:var(--green)"></div> Online Agent</div>
+            <div class="leg-item"><div class="leg-dot" style="background:var(--yellow)"></div> Busy / Delivering</div>
+            <div class="leg-item"><div class="leg-dot" style="background:var(--red)"></div> Offline</div>
+            <div class="leg-item"><div class="leg-dot" style="background:var(--blue)"></div> Delivery Location</div>
+            <div class="leg-item"><div class="leg-dot" style="background:var(--accent)"></div> Pickup / Hub</div>
+          </div>
+        </div>
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:1rem" id="gps-agent-cards"></div>
+      </div>
+
+      <!-- ANALYTICS PAGE -->
+      <div class="page" id="pg-analytics">
+        <div class="metric-grid" id="analytics-metrics"></div>
+        <div class="charts-grid">
+          <div class="chart-card">
+            <div class="chart-title"><i class="ti ti-chart-bar" style="color:var(--accent)"></i> Orders by Status</div>
+            <div class="donut-wrap" id="donut-chart"></div>
+          </div>
+          <div class="chart-card">
+            <div class="chart-title"><i class="ti ti-trending-up" style="color:var(--green)"></i> Daily Orders (Last 7 Days)</div>
+            <div class="line-chart-wrap"><svg class="line-svg" id="line-chart"></svg></div>
+            <div style="font-size:11px;color:var(--text3);margin-top:8px;text-align:center">Mon → Sun</div>
+          </div>
+        </div>
+        <div class="charts-grid">
+          <div class="chart-card">
+            <div class="chart-title"><i class="ti ti-users" style="color:var(--blue)"></i> Agent Performance</div>
+            <div class="bar-wrap" id="agent-bar-chart"></div>
+          </div>
+          <div class="chart-card">
+            <div class="chart-title"><i class="ti ti-calendar" style="color:var(--purple)"></i> Delivery Heatmap (This Week)</div>
+            <div class="heat-days">
+              <div class="heat-day">Mon</div><div class="heat-day">Tue</div><div class="heat-day">Wed</div>
+              <div class="heat-day">Thu</div><div class="heat-day">Fri</div><div class="heat-day">Sat</div><div class="heat-day">Sun</div>
+            </div>
+            <div class="heat-grid" id="heat-grid"></div>
+            <div style="display:flex;align-items:center;gap:6px;margin-top:10px;font-size:11px;color:var(--text3)">
+              Less <div style="display:flex;gap:2px;margin:0 4px">
+                <div style="width:12px;height:12px;border-radius:2px;background:var(--bg3)"></div>
+                <div style="width:12px;height:12px;border-radius:2px;background:rgba(245,166,35,0.25)"></div>
+                <div style="width:12px;height:12px;border-radius:2px;background:rgba(245,166,35,0.55)"></div>
+                <div style="width:12px;height:12px;border-radius:2px;background:rgba(245,166,35,0.8)"></div>
+                <div style="width:12px;height:12px;border-radius:2px;background:var(--accent)"></div>
+              </div> More
+            </div>
+          </div>
+        </div>
+        <div class="chart-card">
+          <div class="chart-title"><i class="ti ti-coin" style="color:var(--accent)"></i> Revenue Breakdown by Zone</div>
+          <div class="bar-wrap" id="zone-bar-chart"></div>
+        </div>
+      </div>
+
+      <!-- ORDERS -->
+      <div class="page" id="pg-orders">
+        <div class="card">
+          <div class="tbl-wrap"><table id="tbl-all-orders"></table></div>
+        </div>
+      </div>
+
+      <!-- AGENTS -->
+      <div class="page" id="pg-agents">
+        <div class="card">
+          <div class="tbl-wrap"><table id="tbl-agents"></table></div>
+        </div>
+      </div>
+
+      <!-- ASSIGN -->
+      <div class="page" id="pg-assign">
+        <div id="assign-content"></div>
+      </div>
+
+      <!-- ROUTE OPTIMIZER -->
+      <div class="page" id="pg-route">
+        <div class="card" style="margin-bottom:1rem">
+          <div class="sec-hdr">
+            <div class="sec-title"><i class="ti ti-route" style="color:var(--accent)"></i> Route Optimizer</div>
+            <div style="display:flex;gap:8px;align-items:center">
+              <select id="route-agent-sel" style="background:var(--bg3);border:var(--border2);color:var(--text);font-size:13px;padding:7px 12px;border-radius:8px;outline:none">
+                <option value="">-- Agent chuniye --</option>
+              </select>
+              <button class="btn btn-accent btn-sm" onclick="optimizeRoute()"><i class="ti ti-bolt"></i> Optimize Route</button>
+            </div>
+          </div>
+          <div style="font-size:13px;color:var(--text2)">Agent ke assigned orders ke liye shortest delivery route calculate karo.</div>
+        </div>
+        <div id="route-result" style="display:none">
+          <div class="route-card">
+            <div class="sec-hdr">
+              <div class="sec-title" id="route-agent-name"></div>
+              <div style="display:flex;gap:8px">
+                <span class="stat-pill" id="route-total-dist"><i class="ti ti-map-pin" style="font-size:13px"></i> —</span>
+                <span class="stat-pill" id="route-total-time"><i class="ti ti-clock" style="font-size:13px"></i> —</span>
+              </div>
+            </div>
+            <div id="route-steps"></div>
+          </div>
+        </div>
+        <div id="route-empty" style="text-align:center;padding:3rem;color:var(--text3)">
+          <i class="ti ti-route" style="font-size:48px;display:block;margin-bottom:10px;color:var(--text3)"></i>
+          Upar se agent chuniye aur Optimize dabao
+        </div>
+      </div>
+
+      <!-- EARNINGS -->
+      <div class="page" id="pg-earnings">
+        <div class="metric-grid" id="earn-metrics"></div>
+        <div class="card" id="earn-table"></div>
+      </div>
+
+      <!-- NOTIFICATIONS -->
+      <div class="page" id="pg-notifications">
+        <div class="card" style="margin-bottom:1rem">
+          <div class="sec-hdr">
+            <div class="sec-title"><i class="ti ti-message-circle" style="color:var(--accent)"></i> Customer Notifications</div>
+            <div class="channel-tabs">
+              <div class="ctab active" id="ctab-sms" onclick="switchCTab('sms')"><i class="ti ti-message"></i> SMS</div>
+              <div class="ctab" id="ctab-wa" onclick="switchCTab('wa')"><i class="ti ti-brand-whatsapp"></i> WhatsApp</div>
+            </div>
+          </div>
+          <div style="font-size:13px;color:var(--text2);margin-bottom:1rem">Order status update customer ko bhejo — SMS ya WhatsApp se.</div>
+          <div class="form-grid" style="margin-bottom:1rem">
+            <div class="fg">
+              <label>Order Select Karo</label>
+              <select id="notif-order-sel" style="width:100%;padding:9px 12px;background:var(--bg3);border:var(--border2);border-radius:var(--radius-sm);font-size:13px;color:var(--text);outline:none" onchange="previewNotif()">
+                <option value="">-- Order chuniye --</option>
+              </select>
+            </div>
+            <div class="fg">
+              <label>Message Type</label>
+              <select id="notif-type" style="width:100%;padding:9px 12px;background:var(--bg3);border:var(--border2);border-radius:var(--radius-sm);font-size:13px;color:var(--text);outline:none" onchange="previewNotif()">
+                <option value="assigned">Order Assigned</option>
+                <option value="enroute">Out for Delivery</option>
+                <option value="delivered">Order Delivered</option>
+                <option value="delayed">Delivery Delayed</option>
+              </select>
+            </div>
+          </div>
+          <div id="notif-preview-area"></div>
+          <div style="display:flex;gap:8px;margin-top:1rem">
+            <button class="btn btn-green" onclick="sendNotification()"><i class="ti ti-send"></i> Send Now <span style="font-size:11px;opacity:0.8">(WhatsApp/SMS app mein khulega)</span></button>
+            <button class="btn btn-sm" onclick="previewNotif()"><i class="ti ti-eye"></i> Preview</button>
+          </div>
+        </div>
+        <div class="notif-panel">
+          <div class="sec-hdr"><div class="sec-title">Notification History</div><span class="badge b-delivered" id="notif-count">0 sent</span></div>
+          <div id="notif-history">
+            <div style="text-align:center;padding:1.5rem;color:var(--text3);font-size:13px">Abhi koi notification nahi bheji gayi</div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+</div>
+
+<!-- DELIVERY BOY -->
+<div id="sc-delivery" class="screen">
+<div class="app">
+  <div class="sidebar">
+    <div class="sb-top"><div class="sb-logo"><div class="sb-icon"><i class="ti ti-motorbike"></i></div><div><div class="sb-name">GLCDelivery</div><div class="sb-role" id="db-sb-area">Agent</div></div></div></div>
+    <div class="nav-sec">My Work</div>
+    <div class="nav-item active" onclick="showDB('db-orders')" id="nav-db-orders"><i class="ti ti-package"></i> Mere Orders</div>
+    <div class="nav-item" onclick="showDB('db-earn')" id="nav-db-earn"><i class="ti ti-coin"></i> Meri Earnings</div>
+    <div class="nav-item" onclick="showDB('db-profile')" id="nav-db-profile"><i class="ti ti-id"></i> Profile</div>
+    <div class="sb-bot">
+      <div class="sb-user">
+        <div class="sb-avatar" id="db-sb-av">R</div>
+        <div><div class="sb-uname" id="db-sb-name">Rahul</div><div class="sb-urole" id="db-sb-status">Online</div></div>
+        <button class="logout-btn" onclick="logout()"><i class="ti ti-logout"></i></button>
+      </div>
+    </div>
+  </div>
+  <div class="main">
+    <div class="topbar">
+      <div><div class="topbar-title" id="db-pg-title">Mere Orders</div><div class="topbar-sub">Aaj ke assigned orders</div></div>
+    </div>
+    <div class="content">
+      <div class="page active" id="pg-db-orders"><div id="db-orders-content"></div></div>
+      <div class="page" id="pg-db-earn"><div class="metric-grid" id="db-earn-metrics"></div><div class="card" id="db-earn-list"></div></div>
+      <div class="page" id="pg-db-profile"><div class="card" id="db-profile-content"></div></div>
+    </div>
+  </div>
+</div>
+</div>
+
+</div>
+
+<!-- MODALS -->
+<div class="modal-bg" id="mod-order">
+  <div class="modal">
+    <div class="modal-hd"><div class="modal-title">Naya Order Add Karo</div><button class="modal-x" onclick="closeM('mod-order')"><i class="ti ti-x"></i></button></div>
+    <div class="form-grid">
+      <div class="fg"><label>Customer Name</label><input id="o-nm" placeholder="Ramesh Kumar"></div>
+      <div class="fg"><label>Phone</label><input id="o-ph" placeholder="9XXXXXXXXX"></div>
+    </div>
+    <div class="fg"><label>Delivery Address</label><input id="o-ad" placeholder="Pura ghar ka address likho"></div>
+    <div class="form-grid">
+      <div class="fg"><label>Items</label><input id="o-it" placeholder="Groceries, Food..."></div>
+      <div class="fg"><label>Amount (₹)</label><input id="o-am" type="number" placeholder="450"></div>
+    </div>
+    <button class="btn btn-accent" style="width:100%;justify-content:center;padding:11px" onclick="addOrder()"><i class="ti ti-plus"></i> Order Add Karo</button>
+  </div>
+</div>
+
+<div class="modal-bg" id="mod-agent">
+  <div class="modal">
+    <div class="modal-hd"><div class="modal-title">Delivery Boy Add Karo</div><button class="modal-x" onclick="closeM('mod-agent')"><i class="ti ti-x"></i></button></div>
+    <div class="form-grid">
+      <div class="fg"><label>Full Name</label><input id="a-nm" placeholder="Rahul Sharma"></div>
+      <div class="fg"><label>Phone</label><input id="a-ph" placeholder="9XXXXXXXXX"></div>
+    </div>
+    <div class="form-grid">
+      <div class="fg"><label>Login Username</label><input id="a-un" placeholder="rahul123"></div>
+      <div class="fg"><label>Password</label><input id="a-pw" type="password" placeholder="password"></div>
+    </div>
+    <div class="form-grid">
+      <div class="fg"><label>Vehicle</label><select id="a-vh"><option>Bike</option><option>Scooter</option><option>Cycle</option><option>Auto</option></select></div>
+      <div class="fg"><label>Area / Zone</label><input id="a-ar" placeholder="Patna City, Boring Road..."></div>
+    </div>
+    <button class="btn btn-accent" style="width:100%;justify-content:center;padding:11px" onclick="addAgent()"><i class="ti ti-user-plus"></i> Agent Add Karo</button>
+  </div>
+</div>
+
+<!-- INVOICE MODAL -->
+<div class="modal-bg" id="mod-invoice">
+  <div class="modal" style="width:580px">
+    <div class="modal-hd"><div class="modal-title"><i class="ti ti-file-invoice" style="color:var(--accent)"></i> Invoice Preview</div><button class="modal-x" onclick="closeM('mod-invoice')"><i class="ti ti-x"></i></button></div>
+    <div id="invoice-preview-area"></div>
+    <div style="display:flex;gap:8px;margin-top:1rem">
+      <button class="btn btn-accent" onclick="downloadPDF()"><i class="ti ti-download"></i> Download PDF</button>
+      <button class="btn" onclick="closeM('mod-invoice')">Close</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// ══════════════════════════════════════════════════
+//  🔥 FIREBASE CONFIGURATION
+//  STEP 1: Apna Firebase config yahan paste karo
+//  firebase.google.com → Project Settings → Web App
+// ══════════════════════════════════════════════════
+const FIREBASE_CONFIG = {
+  apiKey: "AIzaSyDGQ2IN7VgVV23QKMHK6Nvg_7qe3b1wx8w",
+  authDomain: "glc-delivery.firebaseapp.com",
+  databaseURL: "https://glc-delivery-default-rtdb.asia-southeast1.firebasedatabase.app",
+  projectId: "glc-delivery",
+  storageBucket: "glc-delivery.firebasestorage.app",
+  messagingSenderId: "521822921865",
+  appId: "1:521822921865:web:2bc349dbf9fa6fdbd7d258",
+  measurementId: "G-1ETF4713TH"
+};
+
+// Firebase initialize
+firebase.initializeApp(FIREBASE_CONFIG);
+const db = firebase.database();
+
+// ══ INITIAL SEED DATA (pehli baar DB mein data daalne ke liye) ══
+const SEED_AGENTS = [
+  {id:'a1',name:'Rahul Sharma',phone:'9876543210',vehicle:'Bike',area:'Patna City',status:'online',username:'rahul',deliveries:28,earnings:4200,lat:52,lng:22},
+  {id:'a2',name:'Vikram Singh',phone:'9876543211',vehicle:'Scooter',area:'Boring Road',status:'busy',username:'vikram',deliveries:34,earnings:5100,lat:35,lng:58},
+  {id:'a3',name:'Priya Kumari',phone:'9876543212',vehicle:'Bike',area:'Kankarbagh',status:'offline',username:'priya',deliveries:19,earnings:2850,lat:70,lng:38}
+];
+const SEED_ORDERS = [
+  {id:'GLC-001',customer:'Anita Verma',phone:'9812345678',address:'Raja Bazar, Patna',items:'Groceries',amount:450,status:'delivered',agentId:'a1',time:'10:30 AM',lat:48,lng:18},
+  {id:'GLC-002',customer:'Suresh Gupta',phone:'9823456789',address:'Fraser Road, Patna',items:'Medicine',amount:280,status:'assigned',agentId:'a2',time:'11:15 AM',lat:30,lng:62},
+  {id:'GLC-003',customer:'Meena Devi',phone:'9834567890',address:'Ashok Rajpath',items:'Food',amount:320,status:'pending',agentId:null,time:'11:45 AM',lat:60,lng:45},
+  {id:'GLC-004',customer:'Rakesh Kumar',phone:'9845678901',address:'Danapur, Patna',items:'Electronics',amount:1200,status:'assigned',agentId:'a1',time:'12:00 PM',lat:58,lng:28},
+  {id:'GLC-005',customer:'Sunita Singh',phone:'9856789012',address:'Patna Sahib',items:'Clothes',amount:680,status:'delivered',agentId:'a3',time:'09:20 AM',lat:72,lng:72},
+  {id:'GLC-006',customer:'Deepak Yadav',phone:'9867890123',address:'Rajendra Nagar',items:'Food',amount:190,status:'pending',agentId:null,time:'12:30 PM',lat:40,lng:40}
+];
+const SEED_USERS = {
+  admin:{pass:'admin123',role:'admin'},
+  rahul:{pass:'pass123',role:'delivery',aid:'a1'},
+  vikram:{pass:'pass123',role:'delivery',aid:'a2'},
+  priya:{pass:'pass123',role:'delivery',aid:'a3'}
+};
+
+// ══ LOCAL STATE (Firebase se sync hoga) ══
+let USERS = {};
+let S = {
+  role:null, user:null, aid:null,
+  notifHistory:[], notifChannel:'sms', currentInvoiceOrder:null,
+  agents:[], orders:[]
+};
+
+// ══ FIREBASE LISTENERS — real-time sync ══
+function initFirebaseListeners() {
+  // Agents real-time sync
+  db.ref('agents').on('value', snap => {
+    if (snap.exists()) {
+      S.agents = Object.values(snap.val());
+    }
+  });
+  // Orders real-time sync
+  db.ref('orders').on('value', snap => {
+    if (snap.exists()) {
+      const raw = snap.val();
+      S.orders = Object.values(raw).map(o => ({...o, agentId: o.agentId || null}));
+    }
+  });
+  // Users real-time sync
+  db.ref('users').on('value', snap => {
+    if (snap.exists()) USERS = snap.val();
+  });
+}
+
+// ══ DB HELPERS ══
+function fbSaveOrder(order) {
+  return db.ref('orders/' + order.id).set(order);
+}
+function fbSaveAgent(agent) {
+  return db.ref('agents/' + agent.id).set(agent);
+}
+function fbSaveUser(username, userData) {
+  return db.ref('users/' + username).set(userData);
+}
+
+// ══ SEED: Pehli baar data Firebase mein daalo ══
+async function seedIfEmpty() {
+  const snap = await db.ref('orders').once('value');
+  if (!snap.exists()) {
+    showToast('⏳ Pehli baar data load ho raha hai...');
+    const agentPromises = SEED_AGENTS.map(a => db.ref('agents/'+a.id).set(a));
+    const orderPromises = SEED_ORDERS.map(o => db.ref('orders/'+o.id).set(o));
+    const userPromises = Object.entries(SEED_USERS).map(([k,v]) => db.ref('users/'+k).set(v));
+    await Promise.all([...agentPromises, ...orderPromises, ...userPromises]);
+    showToast('✅ Data Firebase mein save ho gaya!');
+  }
+}
+
+// ══ APP STARTUP ══
+async function appStart() {
+  try {
+    initFirebaseListeners();
+    await seedIfEmpty();
+  } catch(e) {
+    console.error('Firebase error:', e);
+    showToast('⚠️ Firebase connect nahi hua. Config check karo.');
+    // Fallback to local data if Firebase fails
+    S.agents = [...SEED_AGENTS];
+    S.orders = [...SEED_ORDERS];
+    USERS = {...SEED_USERS};
+  }
+}
+appStart();
+
+// ══ AUTH ══
+let roleChoice='admin';
+function setRole(r){
+  roleChoice=r;
+  document.getElementById('rtab-admin').classList.toggle('active',r==='admin');
+  document.getElementById('rtab-delivery').classList.toggle('active',r==='delivery');
+  document.getElementById('l-user').value=r==='admin'?'admin':'rahul';
+  document.getElementById('l-pass').value=r==='admin'?'admin123':'pass123';
+  document.getElementById('l-hint').textContent=r==='admin'?'Admin: admin / admin123':'Delivery: rahul / pass123 | vikram / pass123';
+}
+function doLogin(){
+  const u=document.getElementById('l-user').value.trim();
+  const p=document.getElementById('l-pass').value.trim();
+  const usr=USERS[u];
+  if(!usr||usr.pass!==p){showToast('❌ Galat username ya password!');return;}
+  S.user=u;S.role=usr.role;
+  if(usr.role==='admin'){showSc('sc-admin');renderAdmin();}
+  else{
+    S.aid=usr.aid;
+    const ag=S.agents.find(a=>a.id===usr.aid);
+    document.getElementById('db-sb-name').textContent=ag.name;
+    document.getElementById('db-sb-av').textContent=ag.name[0];
+    document.getElementById('db-sb-area').textContent=ag.area;
+    document.getElementById('db-sb-status').textContent=ag.status.charAt(0).toUpperCase()+ag.status.slice(1);
+    showSc('sc-delivery');renderDB();
+  }
+}
+function logout(){showSc('sc-login');S.role=null;}
+function showSc(id){document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));document.getElementById(id).classList.add('active');}
+
+// ══ NAVIGATION ══
+const PAGE_META={
+  dashboard:{title:'Dashboard Overview',sub:'Aaj ki delivery activity'},
+  gpsmap:{title:'GPS Live Tracking',sub:'Real-time agent locations — Patna'},
+  analytics:{title:'Analytics & Reports',sub:'Performance insights aur trends'},
+  orders:{title:'Sabhi Orders',sub:'Orders track aur manage karo'},
+  agents:{title:'Delivery Boys',sub:'Fleet management'},
+  assign:{title:'Order Assign Karo',sub:'Pending orders ko agents ko assign karo'},
+  route:{title:'Route Optimizer',sub:'Shortest delivery path calculate karo'},
+  earnings:{title:'Earnings & Payouts',sub:'Financial overview'},
+  notifications:{title:'Customer Notifications',sub:'SMS & WhatsApp alerts bhejo'}
+};
+function showPage(p){
+  document.querySelectorAll('#sc-admin .page').forEach(el=>el.classList.remove('active'));
+  document.querySelectorAll('#sc-admin .nav-item').forEach(el=>el.classList.remove('active'));
+  document.getElementById('pg-'+p).classList.add('active');
+  document.getElementById('nav-'+p).classList.add('active');
+  const m=PAGE_META[p]||{};
+  document.getElementById('admin-pg-title').textContent=m.title||'';
+  document.getElementById('admin-pg-sub').textContent=m.sub||'';
+  const ar=document.getElementById('admin-topbar-action');
+  if(p==='orders')ar.innerHTML=`<button class="btn btn-accent btn-sm" onclick="openM('mod-order')"><i class="ti ti-plus"></i> Naya Order</button>`;
+  else if(p==='agents')ar.innerHTML=`<button class="btn btn-accent btn-sm" onclick="openM('mod-agent')"><i class="ti ti-user-plus"></i> Agent Add</button>`;
+  else ar.innerHTML='';
+  if(p==='dashboard')renderDash();
+  if(p==='gpsmap')renderGPSMap();
+  if(p==='analytics')renderAnalytics();
+  if(p==='orders')renderOrders();
+  if(p==='agents')renderAgents();
+  if(p==='assign')renderAssign();
+  if(p==='route')renderRouteOptimizer();
+  if(p==='earnings')renderEarnings();
+  if(p==='notifications')renderNotifications();
+}
+function showDB(p){
+  document.querySelectorAll('#sc-delivery .page').forEach(el=>el.classList.remove('active'));
+  document.querySelectorAll('#sc-delivery .nav-item').forEach(el=>el.classList.remove('active'));
+  document.getElementById('pg-'+p).classList.add('active');
+  document.getElementById('nav-'+p).classList.add('active');
+  const titles={'db-orders':'Mere Orders','db-earn':'Meri Earnings','db-profile':'Mera Profile'};
+  document.getElementById('db-pg-title').textContent=titles[p]||'';
+  if(p==='db-orders')renderDBOrders();
+  if(p==='db-earn')renderDBEarn();
+  if(p==='db-profile')renderDBProfile();
+}
+
+// ══ HELPERS ══
+function sBadge(s){
+  const c={pending:'b-pending',assigned:'b-assigned',delivered:'b-delivered',cancelled:'b-cancelled'};
+  const l={pending:'Pending',assigned:'Assigned',delivered:'Delivered',cancelled:'Cancelled'};
+  return `<span class="badge ${c[s]||''}">${l[s]||s}</span>`;
+}
+function asBadge(s){return `<span class="badge b-${s}">${s.charAt(0).toUpperCase()+s.slice(1)}</span>`;}
+function agName(id){if(!id)return '<span style="color:var(--text3)">—</span>';const a=S.agents.find(x=>x.id===id);return a?a.name:'—';}
+function openM(id){document.getElementById(id).classList.add('open');}
+function closeM(id){document.getElementById(id).classList.remove('open');}
+function showToast(msg){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2800);}
+
+// ══ DASHBOARD ══
+function renderAdmin(){renderDash();}
+function renderDash(){
+  const tot=S.orders.length,del=S.orders.filter(o=>o.status==='delivered').length;
+  const pend=S.orders.filter(o=>o.status==='pending').length,asgn=S.orders.filter(o=>o.status==='assigned').length;
+  const rev=S.orders.filter(o=>o.status==='delivered').reduce((s,o)=>s+o.amount,0);
+  const onl=S.agents.filter(a=>a.status!=='offline').length;
+  document.getElementById('adm-metrics').innerHTML=`
+    <div class="metric-card mc-orange"><div class="mc-label">Total Orders</div><div class="mc-val">${tot}</div><div class="mc-sub">aaj tak</div><i class="ti ti-package mc-icon"></i></div>
+    <div class="metric-card mc-green"><div class="mc-label">Delivered</div><div class="mc-val">${del}</div><div class="mc-sub">${tot?Math.round(del/tot*100):0}% success</div><i class="ti ti-check mc-icon"></i></div>
+    <div class="metric-card mc-blue"><div class="mc-label">Active/Assigned</div><div class="mc-val">${asgn}</div><div class="mc-sub">on the way</div><i class="ti ti-motorbike mc-icon"></i></div>
+    <div class="metric-card mc-red"><div class="mc-label">Pending</div><div class="mc-val">${pend}</div><div class="mc-sub">assign karo</div><i class="ti ti-clock mc-icon"></i></div>
+    <div class="metric-card mc-orange"><div class="mc-label">Total Revenue</div><div class="mc-val">₹${rev.toLocaleString()}</div><div class="mc-sub">delivered orders</div><i class="ti ti-coin mc-icon"></i></div>
+    <div class="metric-card mc-green"><div class="mc-label">Active Agents</div><div class="mc-val">${onl}</div><div class="mc-sub">out of ${S.agents.length}</div><i class="ti ti-users mc-icon"></i></div>`;
+  const recent=S.orders.slice(-6).reverse();
+  document.getElementById('tbl-recent').innerHTML=`
+    <thead><tr><th>Order ID</th><th>Customer</th><th>Amount</th><th>Status</th><th>Agent</th><th>Time</th><th>Invoice</th></tr></thead>
+    <tbody>${recent.map(o=>`<tr>
+      <td><span style="font-family:'Syne',sans-serif;color:var(--accent);font-weight:700">${o.id}</span></td>
+      <td><div style="font-weight:500">${o.customer}</div><div style="font-size:11px;color:var(--text3)">${o.address}</div></td>
+      <td><span style="font-family:'Syne',sans-serif;font-weight:700">₹${o.amount}</span></td>
+      <td>${sBadge(o.status)}</td><td>${agName(o.agentId)}</td>
+      <td style="color:var(--text3);font-size:12px">${o.time}</td>
+      <td><button class="btn btn-sm btn-purple" onclick="showInvoice('${o.id}')"><i class="ti ti-file-invoice"></i> PDF</button></td>
+    </tr>`).join('')}</tbody>`;
+}
+
+// ══ GPS MAP ══
+function renderGPSMap(){
+  const map=document.getElementById('map-body');
+  // Clear previous pins (keep grid)
+  map.querySelectorAll('.map-pin,.agent-ping,.route-line,.map-road-h,.map-road-v').forEach(el=>el.remove());
+
+  // Draw stylized roads
+  const roads=[
+    {type:'h',top:'30%',left:'5%',width:'90%'},
+    {type:'h',top:'55%',left:'10%',width:'80%'},
+    {type:'h',top:'78%',left:'5%',width:'60%'},
+    {type:'v',left:'25%',top:'10%',height:'85%'},
+    {type:'v',left:'60%',top:'5%',height:'70%'},
+    {type:'v',left:'80%',top:'25%',height:'55%'},
+  ];
+  roads.forEach(r=>{
+    const el=document.createElement('div');
+    el.className=r.type==='h'?'map-road-h':'map-road-v';
+    Object.assign(el.style,r.type==='h'?{top:r.top,left:r.left,width:r.width}:{left:r.left,top:r.top,height:r.height});
+    map.appendChild(el);
+  });
+
+  // Hub pin
+  const hub=makePin(map,50,10,'🏢','var(--accent)','GLC Hub','hub');
+
+  // Agent pins
+  S.agents.forEach(ag=>{
+    const col=ag.status==='online'?'var(--green)':ag.status==='busy'?'var(--yellow)':'var(--red)';
+    const emoji=ag.status==='offline'?'😴':'🏍️';
+    makePin(map,ag.lat,ag.lng,emoji,col,ag.name.split(' ')[0],ag.id);
+    if(ag.status!=='offline'){
+      const ping=document.createElement('div');
+      ping.className='agent-ping';
+      Object.assign(ping.style,{width:'40px',height:'40px',left:ag.lng+'%',top:ag.lat+'%',position:'absolute'});
+      map.appendChild(ping);
+    }
+  });
+
+  // Delivery pins for assigned orders
+  S.orders.filter(o=>o.status==='assigned').forEach(o=>{
+    makePin(map,o.lat,o.lng,'📦','var(--blue)',o.id,'pin-ord');
+    // Draw route line from agent
+    const ag=S.agents.find(a=>a.id===o.agentId);
+    if(ag)drawRouteLine(map,ag.lng,ag.lat,o.lng,o.lat);
+  });
+
+  // Agent cards
+  document.getElementById('gps-agent-cards').innerHTML=S.agents.map(ag=>`
+    <div class="card" style="padding:1rem">
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:0.75rem">
+        <div style="width:40px;height:40px;border-radius:50%;background:var(--accentg);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:15px;color:#fff">${ag.name[0]}</div>
+        <div style="flex:1">
+          <div style="font-weight:600;font-size:13px">${ag.name}</div>
+          <div style="font-size:11px;color:var(--text3)">${ag.area}</div>
+        </div>
+        ${asBadge(ag.status)}
+      </div>
+      <div style="font-size:12px;color:var(--text2);display:flex;flex-direction:column;gap:4px">
+        <div><i class="ti ti-motorbike" style="color:var(--accent);font-size:13px"></i> ${ag.vehicle}</div>
+        <div><i class="ti ti-package" style="color:var(--blue);font-size:13px"></i> ${S.orders.filter(o=>o.agentId===ag.id&&o.status==='assigned').length} active orders</div>
+        <div><i class="ti ti-map-pin" style="font-size:13px"></i> Lat ${ag.lat.toFixed(1)}° Lng ${ag.lng.toFixed(1)}°</div>
+      </div>
+    </div>`).join('');
+}
+
+function makePin(map,top,left,emoji,color,label,id){
+  const pin=document.createElement('div');
+  pin.className='map-pin';pin.id='pin-'+id;
+  pin.style.left=left+'%';pin.style.top=top+'%';
+  pin.innerHTML=`<div class="pin-dot" style="background:${color}20;border-color:${color}">${emoji}</div>
+    <div class="pin-tail" style="border-top:8px solid ${color}"></div>
+    <div class="pin-label">${label}</div>`;
+  map.appendChild(pin);
+  return pin;
+}
+
+function drawRouteLine(map,x1,y1,x2,y2){
+  const dx=(x2-x1),dy=(y2-y1);
+  const len=Math.sqrt(dx*dx+dy*dy);
+  const angle=Math.atan2(dy,dx)*180/Math.PI;
+  // Convert % to approximate px based on map size
+  const line=document.createElement('div');
+  line.className='route-line';
+  Object.assign(line.style,{
+    left:x1+'%',top:y1+'%',
+    width:len+'%',
+    transform:`rotate(${angle}deg)`,
+    transformOrigin:'0 50%'
+  });
+  map.appendChild(line);
+}
+
+let gpsInterval=null;
+function refreshGPS(){
+  // Simulate movement
+  S.agents.forEach(ag=>{
+    if(ag.status!=='offline'){
+      ag.lat=Math.max(5,Math.min(92,ag.lat+(Math.random()-0.5)*4));
+      ag.lng=Math.max(5,Math.min(92,ag.lng+(Math.random()-0.5)*4));
+    }
+  });
+  renderGPSMap();
+  showToast('📡 GPS refreshed!');
+}
+
+// ══ ANALYTICS ══
+function renderAnalytics(){
+  const tot=S.orders.length,del=S.orders.filter(o=>o.status==='delivered').length;
+  const rev=S.orders.filter(o=>o.status==='delivered').reduce((s,o)=>s+o.amount,0);
+  const avgTime=Math.round(28+Math.random()*12);
+  document.getElementById('analytics-metrics').innerHTML=`
+    <div class="metric-card mc-green"><div class="mc-label">Delivery Rate</div><div class="mc-val">${tot?Math.round(del/tot*100):0}%</div><div class="mc-sub">success ratio</div></div>
+    <div class="metric-card mc-orange"><div class="mc-label">Total Revenue</div><div class="mc-val">₹${rev.toLocaleString()}</div><div class="mc-sub">delivered orders</div></div>
+    <div class="metric-card mc-blue"><div class="mc-label">Avg Delivery Time</div><div class="mc-val">${avgTime} min</div><div class="mc-sub">per order</div></div>
+    <div class="metric-card mc-purple"><div class="mc-label">Customer Rating</div><div class="mc-val">4.7 ⭐</div><div class="mc-sub">avg feedback</div></div>`;
+
+  // DONUT CHART
+  const counts={delivered:del,assigned:S.orders.filter(o=>o.status==='assigned').length,pending:S.orders.filter(o=>o.status==='pending').length,cancelled:S.orders.filter(o=>o.status==='cancelled').length};
+  const colors={delivered:'#22C55E',assigned:'#3B82F6',pending:'#F5A623',cancelled:'#EF4444'};
+  const total=Object.values(counts).reduce((a,b)=>a+b,0)||1;
+  let cumulative=0;
+  const r=60,cx=80,cy=80,circum=2*Math.PI*r;
+  const segments=Object.entries(counts).map(([k,v])=>{
+    const pct=v/total,offset=cumulative;
+    cumulative+=pct;
+    return {k,v,pct,offset};
+  });
+  const svgSegments=segments.map(seg=>{
+    const dash=seg.pct*circum,gap=circum-dash;
+    const rotation=seg.offset*360-90;
+    return `<circle cx="${cx}" cy="${cy}" r="${r}" fill="none" stroke="${colors[seg.k]}" stroke-width="22"
+      stroke-dasharray="${dash} ${gap}" stroke-dashoffset="0" transform="rotate(${rotation} ${cx} ${cy})"
+      style="transition:stroke-dasharray 0.8s ease"/>`;
+  });
+  document.getElementById('donut-chart').innerHTML=`
+    <svg class="donut-svg" width="160" height="160" viewBox="0 0 160 160">
+      <circle cx="${cx}" cy="${cy}" r="${r}" fill="none" stroke="rgba(255,255,255,0.04)" stroke-width="22"/>
+      ${svgSegments.join('')}
+      <text x="${cx}" y="${cy-6}" text-anchor="middle" fill="#F0F2F8" font-size="20" font-weight="700" font-family="Syne,sans-serif">${tot}</text>
+      <text x="${cx}" y="${cy+12}" text-anchor="middle" fill="#5A6278" font-size="10">orders</text>
+    </svg>
+    <div class="donut-legend">
+      ${segments.map(seg=>`<div class="donut-leg-item">
+        <div class="donut-leg-dot" style="background:${colors[seg.k]}"></div>
+        <span style="color:var(--text2)">${seg.k.charAt(0).toUpperCase()+seg.k.slice(1)}</span>
+        <span style="font-weight:600;margin-left:auto;padding-left:10px">${seg.v}</span>
+      </div>`).join('')}
+    </div>`;
+
+  // LINE CHART (7-day)
+  const days=[8,14,11,19,16,22,S.orders.length];
+  const maxD=Math.max(...days);
+  const w=400,h=120,pad=20;
+  const pts=days.map((v,i)=>{
+    const x=pad+(i/(days.length-1))*(w-pad*2);
+    const y=h-pad-(v/maxD)*(h-pad*2);
+    return {x,y,v};
+  });
+  const path='M'+pts.map(p=>`${p.x},${p.y}`).join(' L');
+  const area='M'+pts[0].x+','+h+' L'+pts.map(p=>`${p.x},${p.y}`).join(' L')+` L${pts[pts.length-1].x},${h} Z`;
+  document.getElementById('line-chart').innerHTML=`
+    <defs>
+      <linearGradient id="lgArea" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0%" stop-color="#F5A623" stop-opacity="0.3"/>
+        <stop offset="100%" stop-color="#F5A623" stop-opacity="0"/>
+      </linearGradient>
+    </defs>
+    <path d="${area}" fill="url(#lgArea)"/>
+    <path d="${path}" fill="none" stroke="#F5A623" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+    ${pts.map(p=>`<circle cx="${p.x}" cy="${p.y}" r="4" fill="#F5A623" stroke="#0A0C10" stroke-width="2"/>
+      <text x="${p.x}" y="${p.y-8}" text-anchor="middle" fill="#9BA3B8" font-size="9">${p.v}</text>`).join('')}`;
+
+  // AGENT BAR CHART
+  const maxAgDel=Math.max(...S.agents.map(a=>a.deliveries),1);
+  document.getElementById('agent-bar-chart').innerHTML=S.agents.map(a=>`
+    <div class="bar-item">
+      <div class="bar-label">${a.name.split(' ')[0]}</div>
+      <div class="bar-track">
+        <div class="bar-fill" style="width:${Math.round(a.deliveries/maxAgDel*100)}%;background:linear-gradient(135deg,#3B82F6,#A855F7)">
+          ${a.deliveries>5?a.deliveries:''}
+        </div>
+      </div>
+      <div class="bar-val" style="color:var(--blue)">${a.deliveries}</div>
+    </div>`).join('');
+
+  // HEATMAP
+  const heatData=[3,7,12,5,9,14,8,2,6,10,4,11,7,3,8,13,6,9,12,5,10,4,8,11,7,3,6,9,11,5,8,3,7,12,4,6,10,8,3,11,9,2,7];
+  const maxH=Math.max(...heatData);
+  document.getElementById('heat-grid').innerHTML=heatData.slice(0,35).map((v,i)=>{
+    const intensity=v/maxH;
+    const bg=intensity<0.01?'var(--bg3)':
+      intensity<0.25?'rgba(245,166,35,0.2)':
+      intensity<0.5?'rgba(245,166,35,0.45)':
+      intensity<0.75?'rgba(245,166,35,0.7)':'var(--accent)';
+    return `<div class="heat-cell" style="background:${bg}" data-tip="${v} deliveries"></div>`;
+  }).join('');
+
+  // ZONE BAR CHART
+  const zones=[
+    {name:'Patna City',rev:1800,color:'#F5A623'},
+    {name:'Boring Road',rev:1400,color:'#3B82F6'},
+    {name:'Kankarbagh',rev:980,color:'#22C55E'},
+    {name:'Danapur',rev:650,color:'#A855F7'},
+    {name:'Patna Sahib',rev:420,color:'#EF4444'},
+  ];
+  const maxZ=Math.max(...zones.map(z=>z.rev));
+  document.getElementById('zone-bar-chart').innerHTML=zones.map(z=>`
+    <div class="bar-item">
+      <div class="bar-label" style="width:90px">${z.name}</div>
+      <div class="bar-track">
+        <div class="bar-fill" style="width:${Math.round(z.rev/maxZ*100)}%;background:${z.color}">
+          ₹${z.rev.toLocaleString()}
+        </div>
+      </div>
+      <div class="bar-val" style="color:${z.color}">₹${(z.rev/1000).toFixed(1)}k</div>
+    </div>`).join('');
+}
+
+// ══ ORDERS ══
+function renderOrders(){
+  document.getElementById('tbl-all-orders').innerHTML=`
+    <thead><tr><th>Order ID</th><th>Customer</th><th>Items</th><th>Amount</th><th>Status</th><th>Agent</th><th>Time</th><th>Actions</th></tr></thead>
+    <tbody>${S.orders.map(o=>`<tr>
+      <td><span style="font-family:'Syne',sans-serif;color:var(--accent);font-size:12px;font-weight:700">${o.id}</span></td>
+      <td><div style="font-weight:500">${o.customer}</div><div style="font-size:11px;color:var(--text3)">${o.phone}</div></td>
+      <td><span style="color:var(--text2)">${o.items}</span></td>
+      <td><span style="font-family:'Syne',sans-serif;font-weight:700">₹${o.amount}</span></td>
+      <td>${sBadge(o.status)}</td><td>${agName(o.agentId)}</td>
+      <td style="font-size:12px;color:var(--text3)">${o.time}</td>
+      <td><div style="display:flex;gap:4px;flex-wrap:wrap">
+        ${o.status==='pending'?`<button class="btn btn-green btn-sm" onclick="markStatus('${o.id}','assigned')">Assign</button>`:''}
+        ${o.status==='assigned'?`<button class="btn btn-accent btn-sm" onclick="markStatus('${o.id}','delivered')"><i class="ti ti-check"></i></button>`:''}
+        ${o.status!=='cancelled'&&o.status!=='delivered'?`<button class="btn btn-red btn-sm" onclick="markStatus('${o.id}','cancelled')"><i class="ti ti-x"></i></button>`:''}
+        <button class="btn btn-purple btn-sm" onclick="showInvoice('${o.id}')"><i class="ti ti-file-invoice"></i></button>
+        <button class="btn btn-blue btn-sm" onclick="quickNotif('${o.id}')" title="Notification"><i class="ti ti-send"></i></button>
+        <button class="btn btn-green btn-sm" onclick="quickWhatsApp('${o.id}')" title="WhatsApp"><i class="ti ti-brand-whatsapp"></i></button>
+      </div></td>
+    </tr>`).join('')}</tbody>`;
+}
+
+// ══ AGENTS ══
+function renderAgents(){
+  document.getElementById('tbl-agents').innerHTML=`
+    <thead><tr><th>Agent</th><th>Phone</th><th>Vehicle</th><th>Zone</th><th>Status</th><th>Deliveries</th><th>Earnings</th><th>Status Change</th></tr></thead>
+    <tbody>${S.agents.map(a=>`<tr>
+      <td><div style="display:flex;align-items:center;gap:9px">
+        <div style="width:32px;height:32px;border-radius:50%;background:var(--accentg);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:13px;color:#fff">${a.name[0]}</div>
+        <div><div style="font-weight:500">${a.name}</div><div style="font-size:11px;color:var(--text3)">@${a.username}</div></div>
+      </div></td>
+      <td style="color:var(--text2)">${a.phone}</td>
+      <td><span class="stat-pill"><i class="ti ti-motorbike" style="font-size:13px"></i>${a.vehicle}</span></td>
+      <td style="color:var(--text2)">${a.area}</td>
+      <td>${asBadge(a.status)}</td>
+      <td><span style="font-family:'Syne',sans-serif;font-weight:700">${a.deliveries}</span></td>
+      <td><span style="font-family:'Syne',sans-serif;font-weight:700;color:var(--accent)">₹${a.earnings.toLocaleString()}</span></td>
+      <td><select onchange="changeAS('${a.id}',this.value)" style="background:var(--bg3);border:var(--border2);color:var(--text);font-size:12px;padding:4px 8px;border-radius:6px;outline:none">
+        <option ${a.status==='online'?'selected':''}>online</option>
+        <option ${a.status==='busy'?'selected':''}>busy</option>
+        <option ${a.status==='offline'?'selected':''}>offline</option>
+      </select></td>
+    </tr>`).join('')}</tbody>`;
+}
+
+// ══ ASSIGN ══
+function renderAssign(){
+  const pend=S.orders.filter(o=>o.status==='pending');
+  const avail=S.agents.filter(a=>a.status!=='offline');
+  document.getElementById('assign-content').innerHTML=`
+    <div class="card" style="margin-bottom:1rem">
+      <div style="display:flex;gap:12px">
+        <div class="metric-card mc-orange" style="flex:1"><div class="mc-label">Pending Orders</div><div class="mc-val">${pend.length}</div></div>
+        <div class="metric-card mc-green" style="flex:1"><div class="mc-label">Available Agents</div><div class="mc-val">${avail.length}</div></div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="sec-hdr"><div class="sec-title">Assign Karo</div></div>
+      ${pend.length===0?`<div style="text-align:center;padding:2rem;color:var(--text3)"><i class="ti ti-circle-check" style="font-size:36px;display:block;margin-bottom:8px;color:var(--green)"></i>Koi pending order nahi! Sab assign ho gaya 🎉</div>`:
+      pend.map(o=>`<div class="assign-block">
+        <div style="display:flex;justify-content:space-between;align-items:start;margin-bottom:8px">
+          <div>
+            <span style="font-family:'Syne',sans-serif;font-size:12px;color:var(--accent);font-weight:700">${o.id}</span>
+            <div style="font-size:14px;font-weight:500;color:var(--text);margin-top:2px">${o.customer}</div>
+            <div style="font-size:12px;color:var(--text2);margin-top:2px"><i class="ti ti-map-pin" style="font-size:12px"></i> ${o.address} · ${o.items}</div>
+          </div>
+          <span style="font-family:'Syne',sans-serif;font-size:18px;font-weight:800;color:var(--accent)">₹${o.amount}</span>
+        </div>
+        <div style="display:flex;gap:8px;align-items:center">
+          <select id="asgn-${o.id}" style="flex:1;background:var(--bg);border:var(--border2);color:var(--text);font-size:13px;padding:8px 10px;border-radius:8px;outline:none">
+            <option value="">-- Agent chuniye --</option>
+            ${avail.map(a=>`<option value="${a.id}">${a.name} · ${a.area} · ${a.status}</option>`).join('')}
+          </select>
+          <button class="btn btn-accent btn-sm" onclick="assignOrder('${o.id}')"><i class="ti ti-check"></i> Assign</button>
+        </div>
+      </div>`).join('')}
+    </div>`;
+}
+
+// ══ ROUTE OPTIMIZER ══
+function renderRouteOptimizer(){
+  const sel=document.getElementById('route-agent-sel');
+  sel.innerHTML='<option value="">-- Agent chuniye --</option>'+
+    S.agents.map(a=>`<option value="${a.id}">${a.name} (${a.area})</option>`).join('');
+  document.getElementById('route-result').style.display='none';
+  document.getElementById('route-empty').style.display='block';
+}
+
+function optimizeRoute(){
+  const agId=document.getElementById('route-agent-sel').value;
+  if(!agId){showToast('⚠️ Pehle agent chuniye!');return;}
+  const ag=S.agents.find(a=>a.id===agId);
+  const orders=S.orders.filter(o=>o.agentId===agId&&o.status==='assigned');
+  if(orders.length===0){showToast('⚠️ Is agent ke paas koi active order nahi!');return;}
+
+  // Simulate optimized route with distances and times
+  const routeData=[
+    {addr:'GLC Hub (Start)',dist:'—',time:'—',isHub:true},
+    ...orders.map((o,i)=>({addr:o.address,orderId:o.id,dist:(2.1+i*1.4).toFixed(1)+' km',time:(8+i*6)+' min',amount:o.amount,customer:o.customer})),
+    {addr:'GLC Hub (Return)',dist:(1.8+orders.length*0.7).toFixed(1)+' km',time:(7+orders.length*3)+' min',isReturn:true}
+  ];
+  const totalDist=(orders.length*2.8+2.5).toFixed(1);
+  const totalTime=(orders.length*14+15);
+
+  document.getElementById('route-result').style.display='block';
+  document.getElementById('route-empty').style.display='none';
+  document.getElementById('route-agent-name').innerHTML=`<i class="ti ti-motorbike" style="color:var(--accent)"></i> ${ag.name} — Optimized Route`;
+  document.getElementById('route-total-dist').innerHTML=`<i class="ti ti-map-pin" style="font-size:13px"></i> ${totalDist} km`;
+  document.getElementById('route-total-time').innerHTML=`<i class="ti ti-clock" style="font-size:13px"></i> ~${totalTime} min`;
+
+  document.getElementById('route-steps').innerHTML=routeData.map((step,i)=>`
+    ${i>0?`<div class="route-connector"></div>`:''}
+    <div class="route-step">
+      <div class="step-num">${step.isHub||step.isReturn?'🏢':(i)}</div>
+      <div class="step-body">
+        <div class="step-addr">${step.addr}</div>
+        <div class="step-meta">
+          ${step.orderId?`<span class="badge b-assigned">${step.orderId}</span> · ${step.customer} · ₹${step.amount}`:'Starting point / Return'}
+        </div>
+      </div>
+      ${!step.isHub?`<div class="step-dist">${step.dist}</div>`:''}
+    </div>`).join('');
+  showToast('✅ Route optimized! '+orders.length+' stops — '+totalDist+' km total');
+}
+
+// ══ EARNINGS ══
+function renderEarnings(){
+  const total=S.agents.reduce((s,a)=>s+a.earnings,0);
+  const totalDel=S.agents.reduce((s,a)=>s+a.deliveries,0);
+  document.getElementById('earn-metrics').innerHTML=`
+    <div class="metric-card mc-orange"><div class="mc-label">Total Payouts</div><div class="mc-val">₹${total.toLocaleString()}</div><i class="ti ti-coin mc-icon"></i></div>
+    <div class="metric-card mc-green"><div class="mc-label">Total Deliveries</div><div class="mc-val">${totalDel}</div><i class="ti ti-package mc-icon"></i></div>
+    <div class="metric-card mc-blue"><div class="mc-label">Avg Per Agent</div><div class="mc-val">₹${S.agents.length?Math.round(total/S.agents.length).toLocaleString():0}</div><i class="ti ti-users mc-icon"></i></div>`;
+  document.getElementById('earn-table').innerHTML=`
+    <div class="sec-hdr"><div class="sec-title">Agent-wise Breakdown</div></div>
+    ${S.agents.map(a=>`<div class="earn-row">
+      <div style="display:flex;align-items:center;gap:10px">
+        <div style="width:38px;height:38px;border-radius:50%;background:var(--accentg);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:14px;color:#fff">${a.name[0]}</div>
+        <div>
+          <div style="font-weight:500">${a.name}</div>
+          <div style="font-size:12px;color:var(--text3)">${a.deliveries} deliveries · ${a.area}</div>
+        </div>
+      </div>
+      <div style="text-align:right">
+        <div class="earn-credit">₹${a.earnings.toLocaleString()}</div>
+        <div style="font-size:11px;color:var(--text3)">₹${Math.round(a.earnings/Math.max(a.deliveries,1))} per delivery</div>
+      </div>
+    </div>`).join('')}`;
+}
+
+// ══ NOTIFICATIONS ══
+function renderNotifications(){
+  const sel=document.getElementById('notif-order-sel');
+  sel.innerHTML='<option value="">-- Order chuniye --</option>'+
+    S.orders.map(o=>`<option value="${o.id}">${o.id} — ${o.customer} (${o.status})</option>`).join('');
+  updateNotifHistory();
+}
+function switchCTab(tab){
+  S.notifChannel=tab;
+  document.getElementById('ctab-sms').classList.toggle('active',tab==='sms');
+  document.getElementById('ctab-wa').classList.toggle('active',tab==='wa');
+  previewNotif();
+}
+function getNotifMessage(order,type){
+  const msgs={
+    assigned:`Dear ${order.customer}, aapka order ${order.id} (${order.items}) assign ho gaya hai. Delivery agent jald hi pahunchega. Amount: ₹${order.amount}. - GLCDelivery`,
+    enroute:`Dear ${order.customer}, aapka order ${order.id} ab delivery ke liye nikal gaya hai! 🛵 Thodi der mein aapke paas pahunche ga. Track karein. - GLCDelivery`,
+    delivered:`Dear ${order.customer}, aapka order ${order.id} deliver ho gaya! ✅ Amount: ₹${order.amount}. Feedback dene ke liye: glcdelivery.in/rate. - GLCDelivery`,
+    delayed:`Dear ${order.customer}, hamein khed hai ki order ${order.id} mein thodi der ho rahi hai. Jald hi pahunchayenge. Inconvenience ke liye maafi. - GLCDelivery`
+  };
+  return msgs[type]||msgs.assigned;
+}
+function previewNotif(){
+  const ordId=document.getElementById('notif-order-sel').value;
+  const type=document.getElementById('notif-type').value;
+  const area=document.getElementById('notif-preview-area');
+  if(!ordId){area.innerHTML='';return;}
+  const o=S.orders.find(x=>x.id===ordId);
+  const msg=getNotifMessage(o,type);
+  if(S.notifChannel==='sms'){
+    area.innerHTML=`
+      <div style="margin-bottom:8px;font-size:12px;color:var(--text2)"><i class="ti ti-message" style="color:var(--accent)"></i> SMS Preview — To: ${o.phone}</div>
+      <div class="sms-phone-mock">
+        <div class="sms-time-label">Today, Now</div>
+        <div class="sms-bubble">${msg}</div>
+        <div style="font-size:10px;color:#6e7681;text-align:right;margin-top:4px">${msg.length} characters</div>
+      </div>`;
+  } else {
+    area.innerHTML=`
+      <div style="margin-bottom:8px;font-size:12px;color:var(--text2)"><i class="ti ti-brand-whatsapp" style="color:#22C55E"></i> WhatsApp Preview — To: ${o.phone}</div>
+      <div style="background:#0b141a;border-radius:12px;padding:1rem">
+        <div style="background:#005c4b;color:#fff;border-radius:8px 8px 8px 0;padding:10px 14px;font-size:13px;line-height:1.5;max-width:85%">
+          <div style="font-weight:600;font-size:11px;color:#25d366;margin-bottom:4px">GLCDelivery</div>
+          ${msg}
+          <div style="font-size:10px;color:rgba(255,255,255,0.5);text-align:right;margin-top:4px">✓✓ Now</div>
+        </div>
+      </div>`;
+  }
+}
+function sendNotification(){
+  const ordId=document.getElementById('notif-order-sel').value;
+  const type=document.getElementById('notif-type').value;
+  if(!ordId){showToast('⚠️ Pehle order chuniye!');return;}
+  const o=S.orders.find(x=>x.id===ordId);
+  const typeLabels={assigned:'Order Assigned',enroute:'Out for Delivery',delivered:'Delivered',delayed:'Delivery Delayed'};
+  const msg=getNotifMessage(o,type);
+  if(S.notifChannel==='wa'){ sendWhatsApp(o.phone,msg); }
+  else { sendSMSLink(o.phone,msg); }
+  S.notifHistory.unshift({orderId:o.id,customer:o.customer,phone:o.phone,type:typeLabels[type],channel:S.notifChannel.toUpperCase(),time:new Date().toLocaleTimeString('en-IN',{hour:'2-digit',minute:'2-digit'}),msg:msg});
+  updateNotifHistory();
+}
+function sendWhatsApp(phone,msg){
+  const clean=phone.replace(/\D/g,'');
+  const full=clean.startsWith('91')?clean:'91'+clean;
+  const url='https://wa.me/'+full+'?text='+encodeURIComponent(msg);
+  window.open(url,'_blank');
+  showToast('✅ WhatsApp khul gaya! Message ready — Send karo 📲');
+}
+function sendSMSLink(phone,msg){
+  const clean=phone.replace(/\D/g,'');
+  const full=clean.startsWith('91')?'+'+clean:'+91'+clean;
+  window.location.href='sms:'+full+'?body='+encodeURIComponent(msg);
+  showToast('✅ SMS app khul gaya! Message ready — Send karo 📱');
+}
+function quickWhatsApp(ordId){
+  const o=S.orders.find(x=>x.id===ordId);
+  if(!o)return;
+  sendWhatsApp(o.phone,getNotifMessage(o,'enroute'));
+}
+function updateNotifHistory(){
+  document.getElementById('notif-count').textContent=S.notifHistory.length+' sent';
+  if(S.notifHistory.length===0)return;
+  const icons={SMS:'ti-message',WHATSAPP:'ti-brand-whatsapp'};
+  const cols={SMS:'var(--blue)',WHATSAPP:'var(--green)'};
+  document.getElementById('notif-history').innerHTML=S.notifHistory.map(n=>`
+    <div class="notif-row">
+      <div class="notif-icon" style="background:${cols[n.channel]}22;color:${cols[n.channel]}"><i class="ti ${icons[n.channel]}"></i></div>
+      <div class="notif-body">
+        <div class="notif-title">${n.customer} — ${n.type}</div>
+        <div class="notif-msg">${n.orderId} · ${n.phone} · via ${n.channel}</div>
+      </div>
+      <div class="notif-time">${n.time}</div>
+    </div>`).join('');
+}
+function quickNotif(ordId){
+  showPage('notifications');
+  setTimeout(()=>{
+    const sel=document.getElementById('notif-order-sel');
+    if(sel)sel.value=ordId;
+    previewNotif();
+  },100);
+}
+
+// ══ PDF INVOICE ══
+function showInvoice(ordId){
+  const o=S.orders.find(x=>x.id===ordId);
+  if(!o){return;}
+  S.currentInvoiceOrder=o;
+  const ag=S.agents.find(a=>a.id===o.agentId);
+  const tax=Math.round(o.amount*0.05);
+  const total=o.amount+tax;
+  const today=new Date().toLocaleDateString('en-IN',{day:'2-digit',month:'short',year:'numeric'});
+  document.getElementById('invoice-preview-area').innerHTML=`
+    <div class="invoice-preview" id="inv-content">
+      <div class="inv-header">
+        <div>
+          <div class="inv-title">GLCDelivery</div>
+          <div style="font-size:11px;color:#6b7280;margin-top:2px">Fleet Management Pro · Patna, Bihar</div>
+          <div style="font-size:11px;color:#6b7280">GST: 10XXXXX1234X1ZX</div>
+        </div>
+        <div style="text-align:right">
+          <div style="font-size:16px;font-weight:700;color:#111">INVOICE</div>
+          <div style="font-size:13px;color:#6b7280;margin-top:4px"># ${o.id}</div>
+          <div style="font-size:12px;color:#6b7280">Date: ${today}</div>
+        </div>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:1.5rem;margin-bottom:1.25rem">
+        <div>
+          <div style="font-size:10px;text-transform:uppercase;letter-spacing:0.5px;color:#9ca3af;margin-bottom:6px;font-weight:600">Bill To</div>
+          <div style="font-weight:600;font-size:14px">${o.customer}</div>
+          <div style="font-size:12px;color:#6b7280;margin-top:3px">${o.phone}</div>
+          <div style="font-size:12px;color:#6b7280">${o.address}</div>
+        </div>
+        <div>
+          <div style="font-size:10px;text-transform:uppercase;letter-spacing:0.5px;color:#9ca3af;margin-bottom:6px;font-weight:600">Delivery Agent</div>
+          <div style="font-weight:600;font-size:14px">${ag?ag.name:'Not Assigned'}</div>
+          <div style="font-size:12px;color:#6b7280;margin-top:3px">${ag?ag.phone:''}</div>
+          <div style="font-size:12px;color:#6b7280">${ag?ag.vehicle+' · '+ag.area:''}</div>
+        </div>
+      </div>
+      <table class="inv-table">
+        <thead><tr><th>#</th><th>Item Description</th><th>Qty</th><th>Amount</th></tr></thead>
+        <tbody>
+          <tr><td>1</td><td>${o.items}<br><span style="font-size:11px;color:#9ca3af">Delivered at ${o.address}</span></td><td>1</td><td>₹${o.amount.toLocaleString()}</td></tr>
+          <tr><td>2</td><td>Delivery Charges</td><td>1</td><td>₹40</td></tr>
+          <tr class="inv-total-row"><td colspan="3" style="text-align:right;font-weight:700">GST (5%)</td><td>₹${tax}</td></tr>
+          <tr class="inv-total-row"><td colspan="3" style="text-align:right;font-weight:800;font-size:15px">TOTAL</td><td style="font-size:15px;font-weight:800;color:#f59e0b">₹${(total+40).toLocaleString()}</td></tr>
+        </tbody>
+      </table>
+      <div style="margin-top:1.25rem;padding-top:1rem;border-top:1px solid #f3f4f6;font-size:11px;color:#9ca3af;display:flex;justify-content:space-between">
+        <div>Status: <span style="color:${o.status==='delivered'?'#22C55E':'#f59e0b'};font-weight:600">${o.status.toUpperCase()}</span></div>
+        <div>Order Time: ${o.time}</div>
+        <div>Thank you for using GLCDelivery!</div>
+      </div>
+    </div>`;
+  openM('mod-invoice');
+}
+
+function downloadPDF(){
+  const o=S.currentInvoiceOrder;
+  if(!o){return;}
+  try{
+    const{jsPDF}=window.jspdf;
+    const doc=new jsPDF({orientation:'portrait',unit:'mm',format:'a4'});
+    const ag=S.agents.find(a=>a.id===o.agentId);
+    const tax=Math.round(o.amount*0.05);
+    const today=new Date().toLocaleDateString('en-IN',{day:'2-digit',month:'short',year:'numeric'});
+
+    // Header
+    doc.setFillColor(245,166,35);doc.rect(0,0,210,18,'F');
+    doc.setTextColor(255,255,255);doc.setFont('helvetica','bold');doc.setFontSize(16);
+    doc.text('GLCDelivery — INVOICE',14,12);
+    doc.setFontSize(10);doc.setFont('helvetica','normal');doc.text('Invoice #'+o.id+'  |  '+today,196,12,{align:'right'});
+
+    // Body
+    doc.setTextColor(30,30,30);doc.setFontSize(11);doc.setFont('helvetica','bold');
+    doc.text('Customer Details',14,28);
+    doc.setFont('helvetica','normal');doc.setFontSize(10);
+    doc.text(o.customer,14,35);doc.text(o.phone,14,41);doc.text(o.address,14,47);
+
+    doc.setFont('helvetica','bold');doc.setFontSize(11);doc.text('Delivery Agent',120,28);
+    doc.setFont('helvetica','normal');doc.setFontSize(10);
+    doc.text(ag?ag.name:'Not Assigned',120,35);
+    if(ag){doc.text(ag.phone,120,41);doc.text(ag.vehicle+' · '+ag.area,120,47);}
+
+    // Table
+    doc.setFillColor(254,243,199);doc.rect(14,56,182,8,'F');
+    doc.setFont('helvetica','bold');doc.setFontSize(9);doc.setTextColor(146,64,14);
+    doc.text('ITEM',16,61);doc.text('QTY',140,61);doc.text('AMOUNT',170,61);
+    doc.setTextColor(30,30,30);doc.setFont('helvetica','normal');
+    doc.text(o.items,16,72);doc.text('1',140,72);doc.text('Rs.'+o.amount,170,72);
+    doc.text('Delivery Charges',16,80);doc.text('1',140,80);doc.text('Rs.40',170,80);
+    doc.line(14,85,196,85);
+    doc.text('GST (5%)',140,92);doc.text('Rs.'+tax,170,92);
+    doc.setFillColor(254,243,199);doc.rect(130,96,66,10,'F');
+    doc.setFont('helvetica','bold');doc.setFontSize(12);doc.setTextColor(245,166,35);
+    doc.text('TOTAL: Rs.'+(o.amount+40+tax),196,104,{align:'right'});
+
+    // Footer
+    doc.setTextColor(150,150,150);doc.setFontSize(9);doc.setFont('helvetica','normal');
+    doc.text('Status: '+o.status.toUpperCase()+'  |  Time: '+o.time+'  |  Thank you for using GLCDelivery!',14,270);
+    doc.setDrawColor(245,166,35);doc.line(14,265,196,265);
+
+    doc.save('Invoice-'+o.id+'.pdf');
+    showToast('📄 Invoice download ho raha hai!');
+  } catch(e){
+    showToast('✅ PDF ready! (Save as PDF from browser print)');
+    window.print();
+  }
+}
+
+// ══ STATUS ACTIONS ══
+function markStatus(id,s){
+  const o=S.orders.find(x=>x.id===id);
+  if(o){
+    if(s==='delivered'&&o.agentId){
+      const ag=S.agents.find(a=>a.id===o.agentId);
+      if(ag){ag.deliveries++;ag.earnings+=Math.round(o.amount*0.1);fbSaveAgent(ag);}
+    }
+    o.status=s;
+    fbSaveOrder(o);
+    showToast(s==='delivered'?'✅ Delivered mark ho gaya!':s==='assigned'?'📦 Assigned!':'❌ Cancelled');
+    renderOrders();
+  }
+}
+function changeAS(id,val){const a=S.agents.find(x=>x.id===id);if(a){a.status=val;fbSaveAgent(a);showToast('Status updated: '+val);}}
+function assignOrder(oid){
+  const sel=document.getElementById('asgn-'+oid);
+  if(!sel||!sel.value){showToast('⚠️ Pehle agent chuniye!');return;}
+  const o=S.orders.find(x=>x.id===oid);
+  o.agentId=sel.value;o.status='assigned';
+  fbSaveOrder(o);
+  showToast('✅ Order assigned ho gaya!');renderAssign();
+}
+function addOrder(){
+  const nm=document.getElementById('o-nm').value.trim(),ph=document.getElementById('o-ph').value.trim();
+  const ad=document.getElementById('o-ad').value.trim(),it=document.getElementById('o-it').value.trim();
+  const am=parseInt(document.getElementById('o-am').value)||0;
+  if(!nm||!ad||!it){showToast('⚠️ Sab fields bharein!');return;}
+  const n=new Date(),tid=String(n.getHours()).padStart(2,'0')+':'+String(n.getMinutes()).padStart(2,'0');
+  const id='GLC-'+String(100+S.orders.length+1);
+  const newOrder={id,customer:nm,phone:ph,address:ad,items:it,amount:am,status:'pending',agentId:null,time:tid,lat:Math.random()*70+10,lng:Math.random()*70+10};
+  S.orders.push(newOrder);
+  fbSaveOrder(newOrder);
+  closeM('mod-order');showToast('✅ Order added: '+id);renderOrders();
+  ['o-nm','o-ph','o-ad','o-it','o-am'].forEach(x=>document.getElementById(x).value='');
+}
+function addAgent(){
+  const nm=document.getElementById('a-nm').value.trim(),ph=document.getElementById('a-ph').value.trim();
+  const un=document.getElementById('a-un').value.trim(),pw=document.getElementById('a-pw').value.trim();
+  const vh=document.getElementById('a-vh').value,ar=document.getElementById('a-ar').value.trim();
+  if(!nm||!ph||!un||!pw||!ar){showToast('⚠️ Sab fields bharein!');return;}
+  if(USERS[un]){showToast('⚠️ Username already exist karta hai!');return;}
+  const id='a'+(S.agents.length+4);
+  const newAgent={id,name:nm,phone:ph,vehicle:vh,area:ar,status:'online',username:un,deliveries:0,earnings:0,lat:Math.random()*70+10,lng:Math.random()*70+10};
+  const newUser={pass:pw,role:'delivery',aid:id};
+  S.agents.push(newAgent);
+  USERS[un]=newUser;
+  fbSaveAgent(newAgent);
+  fbSaveUser(un, newUser);
+  closeM('mod-agent');showToast('✅ '+nm+' agent ban gaye!');renderAgents();
+  ['a-nm','a-ph','a-un','a-pw','a-ar'].forEach(x=>document.getElementById(x).value='');
+}
+
+// ══ DELIVERY BOY ══
+function renderDB(){renderDBOrders();}
+function renderDBOrders(){
+  const ag=S.agents.find(a=>a.id===S.aid);
+  const mine=S.orders.filter(o=>o.agentId===S.aid);
+  const active=mine.filter(o=>o.status==='assigned');
+  const done=mine.filter(o=>o.status==='delivered');
+  document.getElementById('db-orders-content').innerHTML=`
+    <div class="metric-grid">
+      <div class="metric-card mc-orange"><div class="mc-label">Mere Orders</div><div class="mc-val">${mine.length}</div></div>
+      <div class="metric-card mc-blue"><div class="mc-label">Active</div><div class="mc-val">${active.length}</div></div>
+      <div class="metric-card mc-green"><div class="mc-label">Delivered</div><div class="mc-val">${done.length}</div></div>
+      <div class="metric-card mc-orange"><div class="mc-label">Kamaai</div><div class="mc-val">₹${ag.earnings.toLocaleString()}</div></div>
+    </div>
+    ${active.length?`<div class="sec-hdr" style="margin-top:0.5rem"><div class="sec-title">Active Orders</div><span class="badge b-assigned">${active.length} On the way</span></div>`:''}
+    ${active.map(o=>`<div class="ord-card">
+      <div class="ord-card-hd">
+        <div>
+          <div class="ord-id">${o.id}</div>
+          <div class="ord-cust">${o.customer}</div>
+          <div class="ord-addr"><i class="ti ti-map-pin" style="font-size:13px;color:var(--accent)"></i>${o.address}</div>
+          <div class="ord-addr" style="margin-top:3px;color:var(--text3)"><i class="ti ti-package" style="font-size:13px"></i>${o.items} &nbsp;·&nbsp; <i class="ti ti-clock" style="font-size:13px"></i>${o.time}</div>
+        </div>
+        <div class="ord-amt">₹${o.amount}</div>
+      </div>
+      <div class="ord-actions">
+        <button class="btn btn-green" onclick="dbDone('${o.id}')"><i class="ti ti-check"></i> Delivered</button>
+        <button class="btn btn-red" onclick="dbCancel('${o.id}')"><i class="ti ti-x"></i> Cancel</button>
+        <button class="btn btn-purple btn-sm" onclick="showInvoice('${o.id}')"><i class="ti ti-file-invoice"></i> Invoice</button>
+        <button class="btn btn-green btn-sm" onclick="dbWhatsApp('${o.id}','enroute')" title="WhatsApp Customer"><i class="ti ti-brand-whatsapp"></i> WhatsApp</button>
+        <button class="btn btn-blue btn-sm" onclick="dbSMS('${o.id}','enroute')" title="SMS Customer"><i class="ti ti-message"></i> SMS</button>
+        <button class="btn btn-sm" onclick="dbCall('${o.phone}')" title="Call Customer"><i class="ti ti-phone"></i> Call</button>
+      </div>
+    </div>`).join('')}
+    ${done.length?`<div class="sec-hdr" style="margin-top:1.25rem"><div class="sec-title">Completed</div></div>`:''}
+    ${done.map(o=>`<div class="ord-card" style="opacity:0.55">
+      <div class="ord-card-hd">
+        <div><div class="ord-id">${o.id}</div><div class="ord-cust">${o.customer}</div><div class="ord-addr"><i class="ti ti-map-pin" style="font-size:13px"></i>${o.address}</div></div>
+        ${sBadge('delivered')}
+      </div>
+    </div>`).join('')}
+    ${mine.length===0?`<div style="text-align:center;padding:3rem 0;color:var(--text3)"><i class="ti ti-package" style="font-size:42px;display:block;margin-bottom:10px"></i>Abhi koi order assign nahi hua</div>`:''}`;
+}
+function renderDBEarn(){
+  const ag=S.agents.find(a=>a.id===S.aid);
+  const done=S.orders.filter(o=>o.agentId===S.aid&&o.status==='delivered');
+  document.getElementById('db-earn-metrics').innerHTML=`
+    <div class="metric-card mc-orange"><div class="mc-label">Total Earnings</div><div class="mc-val">₹${ag.earnings.toLocaleString()}</div></div>
+    <div class="metric-card mc-green"><div class="mc-label">Deliveries</div><div class="mc-val">${ag.deliveries}</div></div>
+    <div class="metric-card mc-blue"><div class="mc-label">Avg Per Order</div><div class="mc-val">₹${Math.round(ag.earnings/Math.max(ag.deliveries,1))}</div></div>`;
+  document.getElementById('db-earn-list').innerHTML=`
+    <div class="sec-hdr"><div class="sec-title">Delivery History</div></div>
+    ${done.map(o=>`<div class="earn-row">
+      <div>
+        <div style="font-weight:500">${o.id} &nbsp; <span style="font-size:12px;color:var(--text3)">${o.customer}</span></div>
+        <div style="font-size:12px;color:var(--text3);margin-top:2px">${o.items} · ${o.time}</div>
+      </div>
+      <div style="text-align:right;display:flex;align-items:center;gap:8px">
+        <div><div class="earn-credit">+₹${Math.round(o.amount*0.1)}</div><div style="font-size:11px;color:var(--text3)">₹${o.amount} order</div></div>
+        <button class="btn btn-purple btn-sm" onclick="showInvoice('${o.id}')"><i class="ti ti-file-invoice"></i></button>
+      </div>
+    </div>`).join('')}
+    ${done.length===0?'<div style="color:var(--text3);font-size:13px;text-align:center;padding:1.5rem 0">Abhi koi completed delivery nahi hai</div>':''}`;
+}
+function renderDBProfile(){
+  const ag=S.agents.find(a=>a.id===S.aid);
+  document.getElementById('db-profile-content').innerHTML=`
+    <div style="display:flex;align-items:center;gap:16px;padding-bottom:1.25rem;border-bottom:var(--border);margin-bottom:1.25rem">
+      <div style="width:60px;height:60px;border-radius:50%;background:var(--accentg);display:flex;align-items:center;justify-content:center;font-family:'Syne',sans-serif;font-size:22px;font-weight:800;color:#fff;box-shadow:0 8px 24px rgba(245,166,35,0.3)">${ag.name[0]}</div>
+      <div><div style="font-family:'Syne',sans-serif;font-size:18px;font-weight:700">${ag.name}</div><div style="font-size:12px;color:var(--text3);margin-top:2px">@${ag.username} · GLCDelivery Agent</div>${asBadge(ag.status)}</div>
+    </div>
+    ${[['ti-phone','Phone',ag.phone],['ti-motorbike','Vehicle',ag.vehicle],['ti-map-pin','Zone',ag.area],['ti-package','Total Deliveries',ag.deliveries+' orders'],['ti-coin','Total Earnings','₹'+ag.earnings.toLocaleString()]].map(([ic,k,v])=>`<div class="profile-row"><div class="profile-key"><i class="ti ${ic}" style="font-size:16px;color:var(--accent)"></i>${k}</div><div class="profile-val">${v}</div></div>`).join('')}`;
+}
+function dbDone(id){
+  const o=S.orders.find(x=>x.id===id);
+  if(o){
+    o.status='delivered';
+    const ag=S.agents.find(a=>a.id===S.aid);
+    if(ag){ag.deliveries++;ag.earnings+=Math.round(o.amount*0.1);fbSaveAgent(ag);}
+    fbSaveOrder(o);
+    showToast('🎉 Delivered! +₹'+Math.round(o.amount*0.1)+' earned');
+    renderDBOrders();
+  }
+}
+function dbCancel(id){
+  const o=S.orders.find(x=>x.id===id);
+  if(o){o.status='cancelled';fbSaveOrder(o);showToast('Order cancelled');renderDBOrders();}
+}
+
+// ══ DELIVERY BOY — CUSTOMER CONTACT ══
+function dbWhatsApp(ordId, type){
+  const o=S.orders.find(x=>x.id===ordId);
+  if(!o) return;
+  const msgs={
+    enroute:`Namaste ${o.customer} ji! 🛵
+Aapka order *${o.id}* ab raste mein hai.
+Items: ${o.items}
+Amount: ₹${o.amount}
+Jald hi pahunch jayenge! 🙏
+— GLC Delivery`,
+    delivered:`Namaste ${o.customer} ji! ✅
+Aapka order *${o.id}* successfully deliver ho gaya.
+Items: ${o.items}
+Amount: ₹${o.amount}
+Shukriya GLC Delivery choose karne ke liye! 🙏`,
+    delayed:`Namaste ${o.customer} ji! ⏳
+Aapka order *${o.id}* thodi der se aa raha hai.
+Hum jald se jald pahunchne ki koshish kar rahe hain.
+Assuvindha ke liye maafi chahte hain 🙏
+— GLC Delivery`
+  };
+  const msg = msgs[type] || msgs['enroute'];
+  const clean = o.phone.replace(/\D/g,'');
+  const full = clean.startsWith('91') ? clean : '91'+clean;
+  window.open('https://wa.me/'+full+'?text='+encodeURIComponent(msg),'_blank');
+  showToast('✅ WhatsApp khul gaya — Send karo! 📲');
+}
+function dbSMS(ordId, type){
+  const o=S.orders.find(x=>x.id===ordId);
+  if(!o) return;
+  const msg=`GLC Delivery: Aapka order ${o.id} (${o.items}) raste mein hai. Amount: Rs.${o.amount}. Jald pahunchenge!`;
+  const clean = o.phone.replace(/\D/g,'');
+  const full = clean.startsWith('91') ? '+'+clean : '+91'+clean;
+  window.location.href = 'sms:'+full+'?body='+encodeURIComponent(msg);
+  showToast('✅ SMS app khul gaya — Send karo! 📱');
+}
+function dbCall(phone){
+  const clean = phone.replace(/\D/g,'');
+  const full = clean.startsWith('91') ? '+'+clean : '+91'+clean;
+  window.location.href = 'tel:'+full;
+}
+</script>
+
+<!-- ══ PWA INSTALL BANNER ══ -->
+<div id="pwa-banner" style="display:none;position:fixed;bottom:0;left:0;right:0;background:linear-gradient(135deg,#F5A623,#FF6B35);padding:14px 16px;z-index:9999;box-shadow:0 -4px 20px rgba(0,0,0,0.4)">
+  <div style="display:flex;align-items:center;justify-content:space-between;max-width:500px;margin:0 auto">
+    <div style="display:flex;align-items:center;gap:10px">
+      <span style="font-size:28px">🚚</span>
+      <div>
+        <div style="font-family:Syne,sans-serif;font-weight:700;color:#fff;font-size:14px">GLC Delivery App Install Karo!</div>
+        <div style="font-size:11px;color:rgba(255,255,255,0.85)">Home screen pe add karo — bilkul app jaisa</div>
+      </div>
+    </div>
+    <div style="display:flex;gap:8px">
+      <button onclick="installPWA()" style="background:#fff;color:#F5A623;border:none;padding:8px 16px;border-radius:20px;font-weight:700;font-size:13px;cursor:pointer;font-family:Syne,sans-serif">Install</button>
+      <button onclick="document.getElementById('pwa-banner').style.display='none'" style="background:rgba(255,255,255,0.2);color:#fff;border:none;padding:8px 12px;border-radius:20px;font-size:13px;cursor:pointer">✕</button>
+    </div>
+  </div>
+</div>
+
+<!-- iOS Install Guide -->
+<div id="ios-banner" style="display:none;position:fixed;bottom:0;left:0;right:0;background:linear-gradient(135deg,#F5A623,#FF6B35);padding:14px 16px;z-index:9999;box-shadow:0 -4px 20px rgba(0,0,0,0.4)">
+  <div style="max-width:500px;margin:0 auto">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+      <div style="font-family:Syne,sans-serif;font-weight:700;color:#fff;font-size:14px">🚚 GLC Delivery Install Karo (iPhone)</div>
+      <button onclick="document.getElementById('ios-banner').style.display='none'" style="background:rgba(255,255,255,0.2);color:#fff;border:none;padding:6px 10px;border-radius:16px;font-size:13px;cursor:pointer">✕</button>
+    </div>
+    <div style="font-size:12px;color:#fff;line-height:1.8">
+      1️⃣ Neeche <strong>Share button</strong> (□↑) dabao<br>
+      2️⃣ <strong>"Add to Home Screen"</strong> select karo<br>
+      3️⃣ <strong>"Add"</strong> dabao — app install! ✅
+    </div>
+  </div>
+</div>
+
+<script>
+// ══ PWA INSTALL LOGIC ══
+let deferredPrompt = null;
+
+window.addEventListener('beforeinstallprompt', (e) => {
+  e.preventDefault();
+  deferredPrompt = e;
+  // Show install banner after 3 seconds
+  setTimeout(() => {
+    document.getElementById('pwa-banner').style.display = 'block';
+  }, 3000);
+});
+
+function installPWA() {
+  if (deferredPrompt) {
+    deferredPrompt.prompt();
+    deferredPrompt.userChoice.then((result) => {
+      if (result.outcome === 'accepted') {
+        showToast('✅ GLC Delivery app install ho gaya!');
+      }
+      document.getElementById('pwa-banner').style.display = 'none';
+      deferredPrompt = null;
+    });
+  }
+}
+
+// iOS detection
+const isIOS = /iphone|ipad|ipod/i.test(navigator.userAgent);
+const isInStandaloneMode = window.matchMedia('(display-mode: standalone)').matches;
+if (isIOS && !isInStandaloneMode) {
+  setTimeout(() => {
+    document.getElementById('ios-banner').style.display = 'block';
+  }, 3000);
+}
+
+// ══ SERVICE WORKER (offline support) ══
+if ('serviceWorker' in navigator) {
+  const swCode = `
+    const CACHE = 'glc-delivery-v1';
+    const ASSETS = ['/'];
+    self.addEventListener('install', e => {
+      e.waitUntil(caches.open(CACHE).then(c => c.addAll(ASSETS)));
+    });
+    self.addEventListener('fetch', e => {
+      e.respondWith(
+        fetch(e.request).catch(() => caches.match(e.request))
+      );
+    });
+  `;
+  const blob = new Blob([swCode], {type: 'application/javascript'});
+  const swUrl = URL.createObjectURL(blob);
+  navigator.serviceWorker.register(swUrl).then(() => {
+    console.log('GLC SW registered');
+  }).catch(() => {});
+}
+
+window.addEventListener('appinstalled', () => {
+  showToast('🎉 GLC Delivery app successfully install hua!');
+  document.getElementById('pwa-banner').style.display = 'none';
+});
+</script>
+</html>
