@@ -15,7 +15,7 @@ class _OrdersScreenState extends State<OrdersScreen> {
   late Future<Map<String, dynamic>> _f = Api.orders();
 
   Future<void> _refresh() async {
-    setState(() => _f = Api.orders());
+    setState(() { _f = Api.orders(); });
     await _f;
   }
 
@@ -139,3 +139,4 @@ class _Chip extends StatelessWidget {
         child: Text(t, style: TextStyle(color: c, fontSize: 12, fontWeight: FontWeight.w700)),
       );
 }
+
