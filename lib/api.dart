@@ -22,7 +22,7 @@ class Api {
 
   static Future<Map<String, dynamic>> login(String mobile, String password) async {
     final r = await _dio.post('/login',
-        data: FormData.fromMap({'mobile': mobile, 'password': password, 'country_code': '+91'}));
+        data: FormData.fromMap({'mobile': mobile, 'password': password, 'country_code': '91'}));
     final d = Map<String, dynamic>.from(r.data);
     if (d['error'] == false && d['token'] != null) {
       await _store.write(key: 'token', value: d['token'].toString());
@@ -38,3 +38,5 @@ class Api {
 
   static Future<void> logout() => _store.delete(key: 'token');
 }
+
+
